@@ -1,5 +1,7 @@
 import React from 'react'
 import { assets } from '../assets/assets'
+// import AboutUs from '../pages/AboutUs.Jsx'
+// import ContactUs from '../pages/ContactUs'
 
 const Footer = () => {
   return (
@@ -8,7 +10,7 @@ const Footer = () => {
                 <div className="md:max-w-96">
                     <img className="w-36 h-auto" src={assets.logo} alt="logo" />
                     <p className="mt-6 text-sm">
-                        Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.
+                        VisitCeylon is an innovative online platform designed to transform the way travelers explore and experience Sri Lanka’s world-renowned heritage sites.
                     </p>
                     <div className="flex items-center gap-2 mt-4">
                         <img src={assets.googlePlay} alt="google play" className="h-9 w-auto" />
@@ -20,9 +22,9 @@ const Footer = () => {
                         <h2 className="font-semibold mb-5">Company</h2>
                         <ul className="text-sm space-y-2">
                             <li><a href="#">Home</a></li>
-                            <li><a href="#">About us</a></li>
-                            <li><a href="#">Contact us</a></li>
-                            <li><a href="#">Privacy policy</a></li>
+                            {/* <li><a href="about-us"><AboutUs /></a></li>
+                            <li><a href="contact-us"><ContactUs /></a></li> */}
+                            <li><a href="privacy-policy">Privacy policy</a></li>
                         </ul>
                     </div>
                     <div>
