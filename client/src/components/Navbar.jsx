@@ -27,8 +27,8 @@ const Navbar = () => {
 
         <Link onClick={()=> {scrollTo(0,0); setIsOpen(false)}} to='/'>Home</Link>
         <Link onClick={()=> {scrollTo(0,0); setIsOpen(false)}} to='/movies'>Places</Link>
-        <Link onClick={()=> {scrollTo(0,0); setIsOpen(false)}} to='/'>Booking</Link>
-        <Link onClick={()=> {scrollTo(0,0); setIsOpen(false)}} to='/'>Map</Link>
+        <Link onClick={()=> {scrollTo(0,0); setIsOpen(false)}} to='/my-bookings'>Booking</Link>
+        <Link onClick={()=> {scrollTo(0,0); setIsOpen(false)}} to='/map'>Map</Link>
        {favoriteMovies.length > 0 && <Link onClick={()=> {scrollTo(0,0); setIsOpen(false)}} to='/favorite'>Favorites</Link>}
       </div>
 

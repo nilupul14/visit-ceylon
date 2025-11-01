@@ -1,7 +1,5 @@
 import React from 'react'
 import { assets } from '../assets/assets'
-// import AboutUs from '../pages/AboutUs.Jsx'
-// import ContactUs from '../pages/ContactUs'
 
 const Footer = () => {
   return (
@@ -21,9 +19,9 @@ const Footer = () => {
                     <div>
                         <h2 className="font-semibold mb-5">Company</h2>
                         <ul className="text-sm space-y-2">
-                            <li><a href="#">Home</a></li>
-                            {/* <li><a href="about-us"><AboutUs /></a></li>
-                            <li><a href="contact-us"><ContactUs /></a></li> */}
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/about-us">About Us</a></li>
+                            <li><a href="/contact-us">Contact Us</a></li>
                             <li><a href="privacy-policy">Privacy policy</a></li>
                         </ul>
                     </div>
