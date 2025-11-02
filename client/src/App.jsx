@@ -40,11 +40,6 @@ const App = () => {
         <Route path="/favorite" element={<Favorite />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact-us" element={<ContactUs />} />
-
-        <Route index element={<Dashboard />} />
-        <Route path="/add-shows" element={<AddShows />} />
-        <Route path="/list-shows" element={<ListShows />} />
-        <Route path="/list-bookings" element={<ListBookings />} />
         
         <Route
           path="/admin/*"
