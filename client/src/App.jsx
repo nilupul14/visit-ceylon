@@ -40,7 +40,7 @@ const App = () => {
         <Route path="/favorite" element={<Favorite />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact-us" element={<ContactUs />} />
-        
+
         <Route
           path="/admin/*"
           element={
@@ -54,8 +54,8 @@ const App = () => {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="add-shows" element={<AddShows />} />
-          <Route path="list-shows" element={<ListShows />} />
+          <Route path="add-destinations" element={<AddShows />} />
+          <Route path="list-destinations" element={<ListShows />} />
           <Route path="list-bookings" element={<ListBookings />} />
         </Route>
       </Routes>
