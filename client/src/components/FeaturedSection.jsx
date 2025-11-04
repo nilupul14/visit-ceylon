@@ -24,7 +24,7 @@ const FeaturedSection = () => {
         </p>
 
         <button
-          onClick={() => navigate('/movies')}
+          onClick={() => navigate('/destinations')}
           className='group flex items-center gap-2 text-sm text-gray-300 cursor-pointer'
         >
           View All
@@ -41,7 +41,7 @@ const FeaturedSection = () => {
       <div className='flex justify-center mt-20'>
         <button
           onClick={() => {
-            navigate('/movies')
+            navigate('/destinations')
             scrollTo(0, 0)
           }}
           className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer'

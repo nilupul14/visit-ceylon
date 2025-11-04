@@ -12,6 +12,7 @@ export const AppProvider = ({ children })=>{
 
     const [isAdmin, setIsAdmin] = useState(false)
     const [shows, setShows] = useState([])
+    const [destinations, setDestinations] = useState([])
     const [favoriteMovies, setFavoriteMovies] = useState([])
 
     const image_base_url = import.meta.env.VITE_TMDB_IMAGE_BASE_URL;
@@ -37,9 +38,10 @@ export const AppProvider = ({ children })=>{
 
     const fetchShows = async ()=>{
         try {
-            const { data } = await axios.get('/api/show/all')
+            const { data } = await axios.get('/api/destinations')
             if(data.success){
-                setShows(data.shows)
+                setShows(data.destinations || [])
+                setDestinations(data.destinations || [])
             }else{
                 toast.error(data.message)
             }
@@ -76,7 +78,7 @@ export const AppProvider = ({ children })=>{
     const value = {
         axios,
         fetchIsAdmin,
-        user, getToken, navigate, isAdmin, shows, 
+        user, getToken, navigate, isAdmin, shows, destinations,
         favoriteMovies, fetchFavoriteMovies, image_base_url
     }
 

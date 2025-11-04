@@ -5,11 +5,16 @@ import { useAppContext } from '../context/AppContext'
 import { dummyShowsData } from '../assets/assets' // adjust path if different
 
 const Movies = () => {
-  const { shows } = useAppContext()
+  const { shows, destinations } = useAppContext()
+
+  console.log({destinations})
 
   // pick data: real → dummy → empty
   const moviesToShow =
-    shows && shows.length > 0 ? shows : dummyShowsData || []
+    (destinations && destinations.length > 0 && destinations) ||
+    (shows && shows.length > 0 && shows) ||
+    dummyShowsData ||
+    []
 
   // if still nothing, show empty state
   if (!moviesToShow || moviesToShow.length === 0) {
