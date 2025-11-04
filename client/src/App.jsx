@@ -2,7 +2,7 @@ import React from "react";
 import Navbar from "./components/Navbar";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
-import Movies from "./pages/Movies";
+import Destinations from "./pages/Destinations";
 import MovieDetails from "./pages/MovieDetails";
 import SeatLayout from "./pages/SeatLayout";
 import MyBookings from "./pages/MyBookings";
@@ -31,7 +31,7 @@ const App = () => {
       {!isAdminRoute && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/destinations" element={<Movies />} />
+        <Route path="/destinations" element={<Destinations />} />
         <Route path="/destinations/:id" element={<MovieDetails />} />
         <Route path="/destinations/:id/:date" element={<SeatLayout />} />
         <Route path="/my-bookings" element={<MyBookings />} />

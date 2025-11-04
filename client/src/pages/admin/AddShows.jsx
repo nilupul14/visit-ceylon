@@ -8,7 +8,7 @@ import { useAppContext } from '../../context/AppContext'
 import toast from 'react-hot-toast'
 
 const AddShows = () => {
-  const { axios, getToken, user, image_base_url } = useAppContext()
+  const { axios, getToken, user, image_base_url, destinations } = useAppContext()
 
   const currency = import.meta.env.VITE_CURRENCY
   const [nowPlayingMovies, setNowPlayingMovies] = useState([])
@@ -22,7 +22,7 @@ const AddShows = () => {
   const fetchNowPlayingMovies = async () => {
     // if no user yet, just show mock
     if (!user) {
-      setNowPlayingMovies(dummyShowsData)
+      setNowPlayingMovies(destinations)
       setIsLoading(false)
       return
     }

@@ -1,11 +1,13 @@
 import React from "react";
-import MovieCard from "../components/MovieCard";
+import DestinationCard from "../components/DestinationCard";
 import BlurCircle from "../components/BlurCircle";
 import { useAppContext } from "../context/AppContext";
 // import { Contact } from "lucide-react";
 
 const ContactUs = () => {
   const { shows } = useAppContext();
+
+  console.log({shows})
 
   return shows.length > 0 ? (
     <div className="relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]">
@@ -14,8 +16,8 @@ const ContactUs = () => {
 
       <h1 className="text-lg font-medium my-4">Now Showing</h1>
       <div className="flex flex-wrap max-sm:justify-center gap-8">
-        {shows.map((movie) => (
-          <MovieCard movie={movie} key={movie._id} />
+        {shows.map((destination) => (
+          <DestinationCard destination={destination} key={destination._id} />
         ))}
       </div>
     </div>

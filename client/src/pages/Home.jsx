@@ -1,16 +1,16 @@
-import React from 'react'
-import HeroSection from '../components/HeroSection'
-import FeaturedSection from '../components/FeaturedSection'
-import TrailersSection from '../components/TrailersSection'
+import React from "react";
+import Cover from "../components/Cover";
+import FeaturedSection from "../components/FeaturedSection";
+import CinematicTeaser from "../components/CinematicTeaser";
 
 const Home = () => {
   return (
     <>
-      <HeroSection />
+      <Cover />
       <FeaturedSection />
-      <TrailersSection />
+      <CinematicTeaser />
     </>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

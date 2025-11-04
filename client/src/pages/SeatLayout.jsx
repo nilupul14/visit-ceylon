@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { assets, dummyDateTimeData, dummyShowsData } from '../assets/assets'
+import { assets, dummyDateTimeData } from '../assets/assets'
 import Loading from '../components/Loading'
 import { ArrowRightIcon, ClockIcon } from 'lucide-react'
 import isoTimeFormat from '../lib/isoTimeFormat'
@@ -24,7 +24,7 @@ const SeatLayout = () => {
   const [occupiedSeats, setOccupiedSeats] = useState([])
 
   const navigate = useNavigate()
-  const { axios, getToken, user } = useAppContext()
+  const { axios, getToken, user, destinations } = useAppContext()
 
   // --- 1. load show (API → mock)
   const getShow = async () => {
@@ -43,9 +43,9 @@ const SeatLayout = () => {
     // 2) fallback to mock
     const numericId = Number(id)
     const fallbackMovie =
-      dummyShowsData.find(
+    destinations.find(
         item => item._id === id || item.id === numericId
-      ) || dummyShowsData[0]
+      ) || destinations[0]
 
     // wrap to match API shape: { movie, dateTime }
     setShow({

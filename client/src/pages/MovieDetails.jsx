@@ -1,152 +1,154 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { dummyDateTimeData, dummyShowsData } from '../assets/assets'
-import BlurCircle from '../components/BlurCircle'
-import { Heart, PlayCircleIcon, StarIcon } from 'lucide-react'
-import timeFormat from '../lib/timeFormat'
-import DateSelect from '../components/DateSelect'
-import MovieCard from '../components/MovieCard'
-import Loading from '../components/Loading'
-import { useAppContext } from '../context/AppContext'
-import toast from 'react-hot-toast'
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+// import { dummyDateTimeData, dummyShowsData } from '../assets/assets'
+import { dummyDateTimeData } from "../assets/assets";
+import BlurCircle from "../components/BlurCircle";
+import { Heart, PlayCircleIcon, StarIcon } from "lucide-react";
+import DateSelect from "../components/DateSelect";
+import DestinationCard from "../components/DestinationCard";
+import Loading from "../components/Loading";
+import { useAppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
 
 const MovieDetails = () => {
-  const navigate = useNavigate()
-  const { id } = useParams()
-  const [show, setShow] = useState(null)
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [show, setShow] = useState(null);
 
   const {
-    shows,
+    // shows,
+    destinations,
     axios,
     getToken,
     user,
     fetchFavoriteMovies,
     favoriteMovies = [],
-    image_base_url,
-  } = useAppContext()
+    image_base_url
+  } = useAppContext();
 
   // pick 4 movies for "You may also like"
   const suggestedMovies =
-    shows && shows.length > 0 ? shows.slice(0, 4) : dummyShowsData.slice(0, 4)
+    // shows && shows.length > 0 ? shows.slice(0, 4) : dummyShowsData.slice(0, 4)
+    destinations && destinations.length > 0 && destinations.slice(0, 4);
 
   const getShow = async () => {
     // 1) try real API
     try {
-      const { data } = await axios.get(`/api/show/${id}`)
-      if (data?.success && data?.movie) {
-        setShow(data) // server shape: { success, movie, dateTime }
-        return
+      const { data } = await axios.get(`/api/show/${id}`);
+      if (data?.success && data?.destination) {
+        setShow(data); // server shape: { success, destination, dateTime }
+        return;
       }
     } catch (error) {
       // ignore; we'll fall back below
-      console.log('API error, using dummy data...', error)
+      console.log("API error, using dummy data...", error);
     }
 
     // 2) fallback to dummy
-    const numericId = Number(id)
+    const numericId = Number(id);
     const fallbackMovie =
-      dummyShowsData.find(
-        m => m._id === id || m.id === numericId
-      ) || dummyShowsData[0]
+      destinations.find(
+        (location) => location._id === id || location.id === numericId
+      ) || destinations[0];
 
     setShow({
-      movie: fallbackMovie,
+      destination: fallbackMovie,
       // you already import dummyDateTimeData
-      dateTime: dummyDateTimeData,
-    })
-  }
+      dateTime: dummyDateTimeData
+    });
+  };
 
   const handleFavorite = async () => {
     try {
-      if (!user) return toast.error('Please login to proceed')
+      if (!user) return toast.error("Please login to proceed");
 
       const { data } = await axios.post(
-        '/api/user/update-favorite',
+        "/api/user/update-favorite",
         { movieId: id },
         {
-          headers: { Authorization: `Bearer ${await getToken()}` },
+          headers: { Authorization: `Bearer ${await getToken()}` }
         }
-      )
+      );
 
       if (data?.success) {
-        await fetchFavoriteMovies()
-        toast.success(data.message)
+        await fetchFavoriteMovies();
+        toast.success(data.message);
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   useEffect(() => {
-    getShow()
-  }, [id])
+    getShow();
+  }, [id]);
 
-  if (!show) return <Loading />
+  if (!show) return <Loading />;
 
-  const { movie, dateTime } = show
+  const { destination, dateTime } = show;
 
   // poster can be absolute (dummy) or relative (API)
-  const posterSrc = movie.poster_path?.startsWith('http')
-    ? movie.poster_path
-    : image_base_url + movie.poster_path
+  const posterSrc = destination.poster_path?.startsWith("http")
+    ? destination.poster_path
+    : image_base_url + destination.poster_path;
 
   return (
-    <div className='px-6 md:px-16 lg:px-40 pt-30 md:pt-50'>
-      <div className='flex flex-col md:flex-row gap-8 max-w-6xl mx-auto'>
+    <div className="px-6 md:px-16 lg:px-40 pt-30 md:pt-50">
+      <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
         <img
           src={posterSrc}
-          alt={movie.title}
-          className='max-md:mx-auto rounded-xl h-104 max-w-70 object-cover'
+          alt={destination.title}
+          className="max-md:mx-auto rounded-xl h-104 max-w-70 object-cover"
         />
 
-        <div className='relative flex flex-col gap-3'>
-          <BlurCircle top='-100px' left='-100px' />
-          <p className='text-primary'>
-            {'🇱🇰 - VC'.toUpperCase()}
-          </p>
-          <h1 className='text-4xl font-semibold max-w-96 text-balance'>
-            {movie.title}
+        <div className="relative flex flex-col gap-3">
+          <BlurCircle top="-100px" left="-100px" />
+          <p className="text-primary">{"🇱🇰 - VC".toUpperCase()}</p>
+          <h1 className="text-4xl font-semibold max-w-96 text-balance">
+            {destination.title}
           </h1>
 
-          <div className='flex items-center gap-2 text-gray-300'>
-            <StarIcon className='w-5 h-5 text-primary fill-primary' />
-            {(movie.vote_average ?? 0).toFixed(1)} User Rating
+          <div className="flex items-center gap-2 text-gray-300">
+            <StarIcon className="w-5 h-5 text-primary fill-primary" />
+            {(destination.vote_average ?? 0).toFixed(1)} User Rating
           </div>
 
-          <p className='text-gray-400 mt-2 text-sm leading-tight max-w-xl'>
-            {movie.description}
+          <p className="text-gray-400 mt-2 text-sm leading-tight max-w-xl">
+            {destination.description}
           </p>
 
           <p>
-            {/* {movie.runtime ? timeFormat(movie.runtime) : '—'} •{' '} */}
-            {movie.category ? movie.category.map(g => g.name).join(', ') : '—'} •{' '}
-            {movie.release_date
-              ? movie.release_date.split('-')[0]
-              : 'Upcoming'}
+            {destination.category
+              ? destination.category.map((g) => g.name).join(", ")
+              : "—"}{" "}
+            •{" "}
+            {destination.release_date
+              ? destination.release_date.split("-")[0]
+              : "Upcoming"}
           </p>
 
-          <div className='flex items-center flex-wrap gap-4 mt-4'>
-            <button className='flex items-center gap-2 px-7 py-3 text-sm bg-gray-800 hover:bg-gray-900 transition rounded-md font-medium cursor-pointer active:scale-95'>
-              <PlayCircleIcon className='w-5 h-5' />
+          <div className="flex items-center flex-wrap gap-4 mt-4">
+            <button className="flex items-center gap-2 px-7 py-3 text-sm bg-gray-800 hover:bg-gray-900 transition rounded-md font-medium cursor-pointer active:scale-95">
+              <PlayCircleIcon className="w-5 h-5" />
               Watch Trailer
             </button>
 
             <a
-              href='#dateSelect'
-              className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer active:scale-95'
+              href="#dateSelect"
+              className="px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer active:scale-95"
             >
               Buy Tickets
             </a>
 
             <button
               onClick={handleFavorite}
-              className='bg-gray-700 p-2.5 rounded-full transition cursor-pointer active:scale-95'
+              className="bg-gray-700 p-2.5 rounded-full transition cursor-pointer active:scale-95"
             >
               <Heart
                 className={`w-5 h-5 ${
-                  favoriteMovies.find(movie => movie._id === id)
-                    ? 'fill-primary text-primary'
-                    : ''
+                  favoriteMovies.find((destination) => destination._id === id)
+                    ? "fill-primary text-primary"
+                    : ""
                 }`}
               />
             </button>
@@ -155,12 +157,12 @@ const MovieDetails = () => {
       </div>
 
       {/* Casts */}
-      {/* {movie.casts && movie.casts.length > 0 && (
+      {/* {destination.casts && destination.casts.length > 0 && (
         <>
           <p className='text-lg font-medium mt-20'>Your Favorite Cast</p>
           <div className='overflow-x-auto no-scrollbar mt-8 pb-4'>
             <div className='flex items-center gap-4 w-max px-4'>
-              {movie.casts.slice(0, 12).map((cast, index) => {
+              {destination.casts.slice(0, 12).map((cast, index) => {
                 const castImg = cast.profile_path?.startsWith('http')
                   ? cast.profile_path
                   : image_base_url + cast.profile_path
@@ -187,26 +189,29 @@ const MovieDetails = () => {
       <DateSelect dateTime={dateTime || dummyDateTimeData} id={id} />
 
       {/* Suggestions */}
-      <p className='text-lg font-medium mt-20 mb-8'>You May Also Like</p>
-      <div className='flex flex-wrap max-sm:justify-center gap-8'>
-        {suggestedMovies.map((m, index) => (
-          <MovieCard key={m._id || m.id || index} movie={m} />
+      <p className="text-lg font-medium mt-20 mb-8">You May Also Like</p>
+      <div className="flex flex-wrap max-sm:justify-center gap-8">
+        {suggestedMovies.map((location, index) => (
+          <DestinationCard
+            key={location._id || location.id || index}
+            destination={location}
+          />
         ))}
       </div>
 
-      <div className='flex justify-center mt-20'>
+      <div className="flex justify-center mt-20">
         <button
           onClick={() => {
-            navigate('/destinations')
-            scrollTo(0, 0)
+            navigate("/destinations");
+            scrollTo(0, 0);
           }}
-          className='px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer'
+          className="px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer"
         >
           Show more
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default MovieDetails
+export default MovieDetails;
