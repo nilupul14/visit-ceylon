@@ -6,7 +6,7 @@ import { kConverter } from "../../lib/kConverter";
 import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
 
-const AddShows = () => {
+const AddDestinations = () => {
   const { axios, getToken, user, image_base_url, destinations } =
     useAppContext();
 
@@ -377,4 +377,4 @@ const AddShows = () => {
   );
 };
 
-export default AddShows;
+export default AddDestinations;

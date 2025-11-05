@@ -60,53 +60,59 @@ export const seedDestinations = async (req, res) => {
         });
       }
 
-      const arrayLiteral = arrayMatch[1];
-
-      // Evaluate a clean JS array literal safely in a limited Function scope
       // eslint-disable-next-line no-new-func
-      const parsed = new Function(`return ${arrayLiteral};`)();
-      if (!Array.isArray(parsed)) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Parsed data is not an array." });
+      const parsed = new Function(`return ${arrayMatch[1]};`)();
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Parsed data is not a non-empty array.",
+        });
       }
       destinations = parsed;
     }
 
-    if (!Array.isArray(destinations) || destinations.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "No destinations to seed." });
+    // Minimal validation + normalization
+    const normalized = destinations
+      .filter(Boolean)
+      .map((doc) => ({
+        _id: String(doc._id ?? doc.id), // prefer explicit _id; fall back to id
+        id: doc.id != null ? Number(doc.id) : undefined,
+        title: String(doc.title ?? ""),
+        description: String(doc.description ?? ""),
+        poster_path: String(doc.poster_path ?? ""),
+        backdrop_path: String(doc.backdrop_path ?? ""),
+        category: Array.isArray(doc.category) ? doc.category : [],
+        tagline: String(doc.tagline ?? ""),
+        vote_average: Number(doc.vote_average ?? 0),
+        vote_count: Number(doc.vote_count ?? 0),
+        runtime: Number(doc.runtime ?? 0),
+        price: Number(doc.price ?? 0) // ← include price
+      }))
+      .filter((d) => d._id && d.title); // require at least id + title
+
+    if (normalized.length === 0) {
+      return res.status(400).json({ success: false, message: "No valid destinations to seed." });
     }
 
-    // Upsert by _id to avoid duplicates on repeated seeding
-    const ops = destinations.map((doc) => ({
+    // Upsert by _id
+    const ops = normalized.map((d) => ({
       updateOne: {
-        filter: { _id: String(doc._id) },
-        update: {
-          $set: {
-            _id: String(doc._id),
-            id: Number(doc.id),
-            title: doc.title,
-            description: doc.description,
-            poster_path: doc.poster_path,
-            backdrop_path: doc.backdrop_path,
-            category: doc.category,
-            tagline: doc.tagline || "",
-            vote_average: Number(doc.vote_average || 0),
-            vote_count: Number(doc.vote_count || 0),
-            runtime: Number(doc.runtime || 0),
-          },
-        },
+        filter: { _id: d._id },
+        update: { $set: d },
         upsert: true,
       },
     }));
 
-    if (ops.length > 0) {
-      await Destination.bulkWrite(ops, { ordered: false });
-    }
+    const result = await Destination.bulkWrite(ops, { ordered: false });
 
-    return res.json({ success: true, count: ops.length });
+    return res.json({
+      success: true,
+      requested: destinations.length,
+      processed: normalized.length,
+      upserted: result.upsertedCount ?? 0,
+      modified: result.modifiedCount ?? 0,
+      matched: result.matchedCount ?? 0,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: error.message });
@@ -116,9 +122,20 @@ export const seedDestinations = async (req, res) => {
 // GET /api/destinations
 export const getDestinations = async (_req, res) => {
   try {
-    const destinations = await Destination.find({})
+    const destinations = await Destination.find({}, {
+      // project only what your UI needs
+      _id: 1,
+      title: 1,
+      poster_path: 1,
+      backdrop_path: 1,
+      category: 1,
+      tagline: 1,
+      price: 1,
+      vote_average: 1
+    })
       .sort({ title: 1 })
       .lean();
+
     return res.json({ success: true, destinations });
   } catch (error) {
     console.error(error);
@@ -130,11 +147,9 @@ export const getDestinations = async (_req, res) => {
 export const getDestination = async (req, res) => {
   try {
     const { destinationId } = req.params;
-    const destination = await Destination.findById(destinationId).lean();
+    const destination = await Destination.findById(String(destinationId)).lean();
     if (!destination) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Destination not found" });
+      return res.status(404).json({ success: false, message: "Destination not found" });
     }
     return res.json({ success: true, destination });
   } catch (error) {

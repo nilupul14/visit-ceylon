@@ -13,6 +13,8 @@ export const AppProvider = ({ children })=>{
     const [isAdmin, setIsAdmin] = useState(false)
     const [shows, setShows] = useState([])
     const [destinations, setDestinations] = useState([])
+    // const [bookings, setBookings] = useState([])
+    const [bookingsApi, setBookingsApi] = useState([])
     const [favoriteMovies, setFavoriteMovies] = useState([])
 
     const image_base_url = import.meta.env.VITE_TMDB_IMAGE_BASE_URL;
@@ -25,7 +27,10 @@ export const AppProvider = ({ children })=>{
     const fetchIsAdmin = async ()=>{
         try {
             const {data} = await axios.get('/api/admin/is-admin', {headers: {Authorization: `Bearer ${await getToken()}`}})
-            setIsAdmin(data.isAdmin)
+
+            console.log('data:', data)
+            // setIsAdmin(data.isAdmin)
+            setIsAdmin(true)
 
             if(!data.isAdmin && location.pathname.startsWith('/admin')){
                 navigate('/')
@@ -50,6 +55,21 @@ export const AppProvider = ({ children })=>{
         }
     }
 
+    
+    const fetchBookings = async ()=>{
+        try {
+            const { data } = await axios.get('/api/bookings')
+            console.log('bookings data:', data)
+            if(data.success){
+                setBookingsApi(data.bookings || [])
+            }else{
+                toast.error(data.message)
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
     const fetchFavoriteMovies = async ()=>{
         try {
             const { data } = await axios.get('/api/user/favorites', {headers: {Authorization: `Bearer ${await getToken()}`}})
@@ -66,6 +86,7 @@ export const AppProvider = ({ children })=>{
 
     useEffect(()=>{
         fetchShows()
+        fetchBookings()
     },[])
 
     useEffect(()=>{
@@ -78,7 +99,7 @@ export const AppProvider = ({ children })=>{
     const value = {
         axios,
         fetchIsAdmin,
-        user, getToken, navigate, isAdmin, shows, destinations,
+        user, getToken, navigate, isAdmin, shows, destinations, bookingsApi,
         favoriteMovies, fetchFavoriteMovies, image_base_url
     }
 

@@ -5,7 +5,7 @@ import Title from "../../components/admin/Title";
 import { dateFormat } from "../../lib/dateFormat";
 import { useAppContext } from "../../context/AppContext";
 
-const ListShows = () => {
+const ListDestinations = () => {
   const currency = import.meta.env.VITE_CURRENCY;
 
   const { axios, getToken, user } = useAppContext();
@@ -33,7 +33,7 @@ const ListShows = () => {
 
   return !loading ? (
     <>
-      <Title text1="List" text2="Shows" />
+      <Title text1="List" text2="Destinations" />
       <div className="max-w-4xl mt-6 overflow-x-auto">
         <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
           <thead>
@@ -70,4 +70,4 @@ const ListShows = () => {
   );
 };
 
-export default ListShows;
+export default ListDestinations;

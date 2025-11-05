@@ -68,7 +68,7 @@ const Navbar = () => {
             scrollTo(0, 0);
             setIsOpen(false);
           }}
-          to="/map"
+          to="/explore-map"
         >
           Map
         </Link>

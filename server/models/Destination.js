@@ -17,7 +17,9 @@ const destinationSchema = new mongoose.Schema(
     tagline: { type: String },
     vote_average: { type: Number, required: true },
     vote_count: { type: Number, required: true },
-    runtime: { type: Number, required: true }
+    runtime: { type: Number, required: true },
+    date_time: { type: String, required: true },
+    price: { type: Number, required: true },
   },
   { timestamps: true }
 );
