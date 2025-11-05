@@ -5,6 +5,7 @@ import { dummyDateTimeData } from "../assets/assets";
 import BlurCircle from "../components/BlurCircle";
 import { Heart, MapPinIcon, StarIcon } from "lucide-react";
 import DateSelect from "../components/DateSelect";
+import BookingForm from "../components/BookingForm";
 import DestinationCard from "../components/DestinationCard";
 import Loading from "../components/Loading";
 import { useAppContext } from "../context/AppContext";
@@ -261,7 +262,10 @@ seed();
       )} */}
 
       {/* Date / time selection */}
-      <DateSelect dateTime={dateTime || dummyDateTimeData} id={id} />
+      {/* TODO: This section allow to critical development */}
+      {/* <DateSelect dateTime={dateTime || dummyDateTimeData} id={id} /> */}
+
+      <BookingForm destination={destination} availability={dateTime || {}} />
 
       {/* Suggestions */}
       <p className="text-lg font-medium mt-20 mb-8">You May Also Like</p>

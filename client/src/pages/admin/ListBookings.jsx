@@ -48,9 +48,10 @@ const ListBookings = () => {
         <table className="w-full border-collapse  rounded-md overflow-hidden text-nowrap">
           <thead>
             <tr className="bg-primary/20 text-left text-white">
-              <th className="p-2 font-medium pl-5">User Name</th>
-              <th className="p-2 font-medium">Destination Name</th>
-              <th className="p-2 font-medium">Time Duration</th>
+              <th className="p-2 font-medium pl-5">Traveler Name</th>
+              <th className="p-2 font-medium">Destination</th>
+              <th className="p-2 font-medium">Date</th>
+              <th className="p-2 font-medium">Time</th>
               <th className="p-2 font-medium">Tickets</th>
               <th className="p-2 font-medium">Amount</th>
             </tr>
@@ -64,12 +65,14 @@ const ListBookings = () => {
                 <td className="p-2 min-w-45 pl-5">{item.userName}</td>
                 <td className="p-2">{item.destinationTitle}</td>
                 <td className="p-2">{dateFormat(item.visitDate)}</td>
+                <td className="p-2">{item.visitTime}</td>
                 {/* <td className="p-2">
                   {Object.keys(item.bookedSeats)
                     .map((seat) => item.bookedSeats[seat])
                     .join(", ")}
                 </td> */}
-                <td className="p-2">{item.amount}</td>  // this is for number of tickets
+                <td className="p-2">{item.amount}</td>{" "}
+                {/* this is for number of tickets */}
                 <td className="p-2">
                   {currency} {item.amount}
                 </td>

@@ -100,7 +100,7 @@ export const AppProvider = ({ children })=>{
         axios,
         fetchIsAdmin,
         user, getToken, navigate, isAdmin, shows, destinations, bookingsApi,
-        favoriteMovies, fetchFavoriteMovies, image_base_url
+        favoriteMovies, fetchFavoriteMovies, image_base_url, fetchBookings
     }
 
     return (

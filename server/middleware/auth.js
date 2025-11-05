@@ -4,13 +4,20 @@ export const protectAdmin = async (req, res, next) => {
   try {
     const { userId } = req.auth();
 
+    console.log("Admin - userId", userId);
+
     const user = await clerkClient.users.getUser(userId);
 
-    if (user.privateMetadata.role) {
+    console.log("Admin - user", user.privateMetadata);
+
+    if (user.privateMetadata.role === "admin") {
+      next();
+      return res.json({ success: true, message: "you're authorized" });
+    } else {
       return res.json({ success: false, message: "not authorized" });
     }
 
-    next();
+    // next();
   } catch (error) {
     return res.json({ success: false, message: "not authorized" });
   }
