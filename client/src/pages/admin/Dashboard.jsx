@@ -95,7 +95,7 @@ const Dashboard = () => {
       icon: PlayCircleIcon,
     },
     {
-      title: "Unique Travelers",
+      title: "Total Travelers",
       value: totals.totalUsers.toLocaleString(),
       icon: UsersIcon,
     },
@@ -128,7 +128,7 @@ const Dashboard = () => {
         <BlurCircle top="100px" left="-10%" />
         {topDestinations.length === 0 && (
           <p className="text-sm text-gray-400">
-            No bookings yet — bookings will appear here once you start receiving reservations.
+            No bookings yet ï¿½ bookings will appear here once you start receiving reservations.
           </p>
         )}
 

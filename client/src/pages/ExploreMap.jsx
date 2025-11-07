@@ -1,8 +1,9 @@
 import React from "react";
+import BlurCircle from "../components/BlurCircle";
 import VisitCeylonMap from "../components/VisitCeylonMap";
+import Loading from "../components/Loading";
 
 const ExploreMap = () => {
-
   const locationData = [
     {
       _id: "324544",
@@ -12,7 +13,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761894972/linerock_bpb0j9.png",
       price: 15,
       lat: 7.957,
-      lng: 80.7603
+      lng: 80.7603,
     },
     {
       _id: "1232546",
@@ -22,7 +23,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761897193/HortonPalins_jv2ea7.png",
       price: 10,
       lat: 6.8021,
-      lng: 80.8022
+      lng: 80.8022,
     },
     {
       _id: "986056-d",
@@ -32,7 +33,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761902201/Anuradhapura_q45l8y.png",
       price: 12,
       lat: 8.3114,
-      lng: 80.4037
+      lng: 80.4037,
     },
     {
       _id: "2001",
@@ -42,7 +43,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761910590/Pinnawala_i35qwa.png",
       price: 5,
       lat: 7.3017,
-      lng: 80.383
+      lng: 80.383,
     },
     {
       _id: "2002",
@@ -52,7 +53,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761912600/WilpattuPark_vikolh.png",
       price: 20,
       lat: 8.4887,
-      lng: 80.0255
+      lng: 80.0255,
     },
     {
       _id: "2003",
@@ -62,7 +63,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761912606/MinneriyaPark_salvlo.png",
       price: 10,
       lat: 8.0353,
-      lng: 80.8203
+      lng: 80.8203,
     },
     {
       _id: "2004",
@@ -72,7 +73,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761912747/LotusTower_ycwjfk.png",
       price: 15,
       lat: 6.9273,
-      lng: 79.861
+      lng: 79.861,
     },
     {
       _id: "2005",
@@ -82,7 +83,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761895485/Pidurangala_mjm8ta.png",
       price: 10,
       lat: 7.962,
-      lng: 80.744
+      lng: 80.744,
     },
     {
       _id: "2006",
@@ -92,7 +93,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761895483/NineArchBridge_mtd7ef.png",
       price: 24,
       lat: 6.867,
-      lng: 81.0596
+      lng: 81.0596,
     },
     {
       _id: "2007",
@@ -102,7 +103,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761910874/NuwaraeliyaTeaFields_lajwyd.png",
       price: 13,
       lat: 6.9497,
-      lng: 80.7891
+      lng: 80.7891,
     },
     {
       _id: "2008",
@@ -112,7 +113,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761910985/PigeonIsland_evgonz.png",
       price: 10,
       lat: 8.7213,
-      lng: 81.1888
+      lng: 81.1888,
     },
     {
       _id: "2009",
@@ -122,7 +123,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761911625/Arugambay_lkkpzx.png",
       price: 10,
       lat: 6.839,
-      lng: 81.833
+      lng: 81.833,
     },
     {
       _id: "668489",
@@ -132,7 +133,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761895584/DaladaMaligawa_owkvs2.png",
       price: 10,
       lat: 7.2936,
-      lng: 80.6413
+      lng: 80.6413,
     },
     {
       _id: "552524",
@@ -142,7 +143,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761902341/YalaSafari_voqaht.png",
       price: 10,
       lat: 6.3619,
-      lng: 81.52
+      lng: 81.52,
     },
     {
       _id: "950387",
@@ -152,7 +153,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761901896/Polonnaruwa_k3rwkg.png",
       price: 10,
       lat: 7.9396,
-      lng: 81.0003
+      lng: 81.0003,
     },
     {
       _id: "575265",
@@ -162,7 +163,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761901495/GallePort-BG_hxwb18.png",
       price: 10,
       lat: 6.0269,
-      lng: 80.217
+      lng: 80.217,
     },
     {
       _id: "986056",
@@ -172,7 +173,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761903282/DambullaCaveTemple_aumvey.png",
       price: 10,
       lat: 7.8554,
-      lng: 80.649
+      lng: 80.649,
     },
     {
       _id: "986056-a",
@@ -182,7 +183,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761902937/AmbuluwawaTower_gdmsev.png",
       price: 10,
       lat: 7.164,
-      lng: 80.5626
+      lng: 80.5626,
     },
     {
       _id: "986056-b",
@@ -192,7 +193,7 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761897191/CoconutTreeHills_julzmh.png",
       price: 10,
       lat: 5.9396,
-      lng: 80.4594
+      lng: 80.4594,
     },
     {
       _id: "986056-c",
@@ -202,23 +203,35 @@ const ExploreMap = () => {
         "https://res.cloudinary.com/dirqkqwps/image/upload/v1761903125/SinharajaRainForest_mqp6ia.png",
       price: 10,
       lat: 6.4214,
-      lng: 80.4589
-    }
+      lng: 80.4589,
+    },
   ];
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <br />
-      <br />
-      <br />
-      <br />
-      <h1 className="text-2xl font-bold mb-4">Explore Sri Lanka</h1>
-      {!locationData.length ? (
-        <p className="text-gray-500">⏳ Fetching map locations...</p>
-      ) : (
-        <VisitCeylonMap destinations={locationData} height="560px" />
-      )}
-    </div>
+    <section className="relative min-h-screen bg-[#030406] px-4 pt-25 pb-20 text-white overflow-hidden">
+      <BlurCircle top="-80px" left="-20%" />
+      <BlurCircle bottom="-80px" right="-4%" />
+      <div className="absolute inset-0 z-[-10]">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#01343640] to-transparent" />
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[80%] max-w-5xl h-full bg-teal-300/15 blur-[240px]" />
+      </div>
+      <div className="relative z-10 max-w-6xl mx-auto space-y-6">
+        <header className="text-center space-y-3">
+          <p className="text-white/60 text-sm uppercase tracking-[0.3em]">
+            Explore Sri Lanka
+          </p>
+          <h1 className="text-4xl font-semibold">Interactive Destination Map</h1>
+        </header>
+
+        <div className="rounded-[32px] border border-white/5 bg-gradient-to-r from-[#04161c] via-[#031116] to-[#05080c] shadow-[0_30px_55px_rgba(0,0,0,0.45)] p-5 sm:p-8 min-h-[600px] flex items-center justify-center">
+          {!locationData.length ? (
+            <Loading />
+          ) : (
+            <VisitCeylonMap destinations={locationData} height="560px" />
+          )}
+        </div>
+      </div>
+    </section>
   );
 };
 

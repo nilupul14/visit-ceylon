@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // import { dummyDateTimeData, dummyShowsData } from '../assets/assets'
 import { dummyDateTimeData } from "../assets/assets";
 import BlurCircle from "../components/BlurCircle";
 import { Heart, MapPinIcon, StarIcon } from "lucide-react";
-import DateSelect from "../components/DateSelect";
+import Calendar from "../components/Calender";
 import BookingForm from "../components/BookingForm";
 import DestinationCard from "../components/DestinationCard";
 import Loading from "../components/Loading";
@@ -14,120 +14,51 @@ import toast from "react-hot-toast";
 const DestinationDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [show, setShow] = useState(null);
+  const [destination, setDestination] = useState(null);
 
-  const API = "/api/bookings"; // same origin proxy
-
-async function seed() {
-  const items = [
-  {
-    bookingId: "seed_booking_1",
-    user: "seed_user_alex",
-    destination: "seed_destination_sigiriya",
-    visitDate: "2025-06-30",
-    visitTime: "08:30",
-    amount: 2,
-    userName: "Alex Popkov",
-    destinationTitle: "Sigiriya Rock Fortress"
-  },
-  {
-    bookingId: "seed_booking_2",
-    user: "seed_user_julia",
-    destination: "seed_destination_ella",
-    visitDate: "2025-07-02",
-    visitTime: "06:00",
-    amount: 3,
-    userName: "Julia Rogers",
-    destinationTitle: "Ella"
-  },
-  {
-    bookingId: "seed_booking_3",
-    user: "seed_user_kamal",
-    destination: "seed_destination_galle_fort",
-    visitDate: "2025-08-12",
-    visitTime: "10:00",
-    amount: 1,
-    userName: "Kamal Perera",
-    destinationTitle: "Galle Fort"
-  },
-  {
-    bookingId: "seed_booking_4",
-    user: "seed_user_sarah",
-    destination: "seed_destination_kandy_temple",
-    visitDate: "2025-09-05",
-    visitTime: "14:30",
-    amount: 4,
-    userName: "Sarah Johnson",
-    destinationTitle: "Temple of the Sacred Tooth Relic"
-  },
-  {
-    bookingId: "seed_booking_5",
-    user: "seed_user_nimal",
-    destination: "seed_destination_lotus_tower",
-    visitDate: "2025-11-10",
-    visitTime: "19:00",
-    amount: 2,
-    userName: "Nimal Silva",
-    destinationTitle: "Colombo Lotus Tower"
-  }
-];
-  for (const b of items) {
-    const res = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(b),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error("Failed:", b.bookingId, err);
-    }
-  }
-}
-seed();
+  const API = "/api/bookings";
 
 
   const {
-    // shows,
-    destinations,
     axios,
     getToken,
     user,
+    destinations = [],
     fetchFavoriteMovies,
     favoriteMovies = [],
-    image_base_url
   } = useAppContext();
 
-  // pick 4 movies for "You may also like"
-  const suggestedMovies =
-    // shows && shows.length > 0 ? shows.slice(0, 4) : dummyShowsData.slice(0, 4)
-    destinations && destinations.length > 0 && destinations.slice(0, 4);
+  const suggestedDestinations = useMemo(() => {
+    if (!Array.isArray(destinations) || destinations.length === 0) return [];
+    return destinations.slice(0, 4);
+  }, [destinations]);
 
-  const getShow = async () => {
-    // 1) try real API
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const getDestination = async () => {
     try {
-      const { data } = await axios.get(`/api/show/${id}`);
+      const { data } = await axios.get(`/api/destinations/${id}`);
+      console.log("Fetched destination data:", data.destination);
       if (data?.success && data?.destination) {
-        setShow(data); // server shape: { success, destination, dateTime }
+        setDestination(data.destination);
         return;
       }
     } catch (error) {
-      // ignore; we'll fall back below
       console.log("API error, using dummy data...", error);
     }
 
     // 2) fallback to dummy
-    const numericId = Number(id);
-    const fallbackMovie =
-      destinations.find(
-        (location) => location._id === id || location.id === numericId
-      ) || destinations[0];
+    // const numericId = Number(id);
+    // const fallbackMovie =
+    //   destinations.find(
+    //     (location) => location._id === id || location.id === numericId
+    //   ) || destinations[0];
 
-    setShow({
-      destination: fallbackMovie,
-      // you already import dummyDateTimeData
-      dateTime: dummyDateTimeData
-    });
-  };
+    // setDestination({
+    //   destination: fallbackMovie,
+    //   // you already import dummyDateTimeData
+    //   dateTime: dummyDateTimeData
+    // });
+  };  
 
   const handleFavorite = async () => {
     try {
@@ -150,71 +81,85 @@ seed();
     }
   };
 
+  const availability = destination?.availability || dummyDateTimeData;
+  const availableDates = useMemo(
+    () => (availability ? Object.keys(availability).sort() : []),
+    [availability]
+  );
+  const initialCalendarDate = useMemo(() => {
+    if (availableDates.length) {
+      return new Date(`${availableDates[0]}T00:00:00`);
+    }
+    return new Date();
+  }, [availableDates]);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const calendarRef = useRef(null);
+  const [calendarPulse, setCalendarPulse] = useState(false);
+
   useEffect(() => {
-    getShow();
-  }, [id]);
+    getDestination();
+  }, [getDestination, id]);
 
-  if (!show) return <Loading />;
-
-  const { destination, dateTime } = show;
-
-  // poster can be absolute (dummy) or relative (API)
-  const posterSrc = destination.poster_path?.startsWith("http")
-    ? destination.poster_path
-    : image_base_url + destination.poster_path;
+  if (!destination) return <Loading />;
 
   const openMap = () => {
     const query = encodeURIComponent(destination.title + " Sri Lanka");
     const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
     window.open(url, "_blank");
-  }
+  };
 
   return (
     <div className="px-6 md:px-16 lg:px-40 pt-30 md:pt-50">
       <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
         <img
-          src={posterSrc}
-          alt={destination.title}
+          src={destination?.poster_path}
+          alt={destination?.title}
           className="max-md:mx-auto rounded-xl h-104 max-w-70 object-cover"
         />
 
         <div className="relative flex flex-col gap-3">
           <BlurCircle top="-100px" left="-100px" />
-          <p className="text-primary">{"🇱🇰 - VC".toUpperCase()}</p>
           <h1 className="text-4xl font-semibold max-w-96 text-balance">
-            {destination.title}
+            {destination?.title}
           </h1>
+
+          <div className="flex gap-2 text-gray-300">
+            <MapPinIcon className="w-5 h-5 text-primary fill-primary" />
+            {destination?.description}
+          </div>
+
+          <p>
+            {destination?.category
+              ? destination?.category.map((g) => g.name).join(", ")
+              : "—"}{" "}
+            •{" "}
+            {!destination?.category
+              ? destination?.release_date.split("-")[0]
+              : "Explore"}
+          </p>
 
           <div className="flex items-center gap-2 text-gray-300">
             <StarIcon className="w-5 h-5 text-primary fill-primary" />
-            {(destination.vote_average ?? 0).toFixed(1)} User Rating
+            {(destination?.vote_average ?? 0).toFixed(1)} Google Rating
           </div>
-
-          <p className="text-gray-400 mt-2 text-sm leading-tight max-w-xl">
-            {destination.description}
-          </p>
-
-          <p>
-            {destination.category
-              ? destination.category.map((g) => g.name).join(", ")
-              : "—"}{" "}
-            •{" "}
-            {destination.release_date
-              ? destination.release_date.split("-")[0]
-              : "Upcoming"}
-          </p>
 
           <div className="flex items-center flex-wrap gap-4 mt-4">
             <button className="flex items-center gap-2 px-7 py-3 text-sm bg-gray-800 hover:bg-gray-900 transition rounded-md font-medium cursor-pointer active:scale-95" onClick={() => openMap()}>
               <MapPinIcon className="w-5 h-5" /> Map View
             </button>
 
-            <a
-              href="#dateSelect"
+            <button
+              onClick={() => {
+                setCalendarPulse(true);
+                calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                requestAnimationFrame(() => {
+                  setTimeout(() => setCalendarPulse(false), 1200);
+                });
+              }}
               className="px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer active:scale-95"
             >
               Buy Tickets
-            </a>
+            </button>
 
             <button
               onClick={handleFavorite}
@@ -261,16 +206,47 @@ seed();
         </>
       )} */}
 
-      {/* Date / time selection */}
-      {/* TODO: This section allow to critical development */}
-      {/* <DateSelect dateTime={dateTime || dummyDateTimeData} id={id} /> */}
+      <section
+        className={`mt-16 transition duration-500 ${
+          calendarPulse ? "ring-4 ring-primary/50 rounded-[28px]" : ""
+        }`}
+        ref={calendarRef}
+        id="dateSelect"
+      >
+        <div className="flex flex-col gap-3 mb-6">
+          <h2 className="text-2xl font-semibold">Choose your visit date</h2>
+          <p className="text-sm text-gray-300">
+            Tap a highlighted date to enable the booking form. Once selected, continue below to pick a
+            time and confirm tickets.
+          </p>
+          {selectedDate && (
+            <p className="text-xs uppercase tracking-wide text-primary">
+              Selected:{" "}
+              {new Date(selectedDate).toLocaleDateString("en-US", {
+                dateStyle: "full",
+              })}
+            </p>
+          )}
+        </div>
+        <Calendar
+          initialDate={initialCalendarDate}
+          value={selectedDate}
+          marks={availableDates}
+          onSelect={(date) => setSelectedDate(date)}
+        />
+      </section>
 
-      <BookingForm destination={destination} availability={dateTime || {}} />
+      <BookingForm
+        destination={destination}
+        availability={availability || {}}
+        selectedDate={selectedDate}
+        onResetSelectedDate={() => setSelectedDate(null)}
+      />
 
       {/* Suggestions */}
       <p className="text-lg font-medium mt-20 mb-8">You May Also Like</p>
       <div className="flex flex-wrap max-sm:justify-center gap-8">
-        {suggestedMovies.map((location, index) => (
+        {suggestedDestinations.map((location, index) => (
           <DestinationCard
             key={location._id || location.id || index}
             destination={location}
@@ -278,17 +254,19 @@ seed();
         ))}
       </div>
 
-      <div className="flex justify-center mt-20">
-        <button
-          onClick={() => {
-            navigate("/destinations");
-            scrollTo(0, 0);
-          }}
-          className="px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer"
-        >
-          Show more
-        </button>
-      </div>
+      {destinations.length > 4 && (
+        <div className="flex justify-center mt-20">
+          <button
+            onClick={() => {
+              navigate("/destinations");
+              scrollTo(0, 0);
+            }}
+            className="px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer"
+          >
+            Show more
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -20,6 +20,7 @@ import Loading from "./components/Loading";
 import AboutUs from "./pages/AboutUs";
 import ContactUs from "./pages/ContactUs";
 import ExploreMap from "./pages/ExploreMap";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const App = () => {
   const isAdminRoute = useLocation().pathname.startsWith("/admin");
@@ -42,6 +43,7 @@ const App = () => {
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/explore-map" element={<ExploreMap />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         <Route
           path="/admin/*"

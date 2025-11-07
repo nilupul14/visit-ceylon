@@ -1,92 +1,82 @@
 import React from "react";
-import DestinationCard from "../components/DestinationCard";
 import BlurCircle from "../components/BlurCircle";
-import { useAppContext } from "../context/AppContext";
-// import { Contact } from "lucide-react";
 
 const ContactUs = () => {
-  const { shows } = useAppContext();
-
-  console.log({shows})
-
-  return shows.length > 0 ? (
-    <div className="relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]">
-      <BlurCircle top="150px" left="0px" />
-      <BlurCircle bottom="50px" right="50px" />
-
-      <h1 className="text-lg font-medium my-4">Now Showing</h1>
-      <div className="flex flex-wrap max-sm:justify-center gap-8">
-        {shows.map((destination) => (
-          <DestinationCard destination={destination} key={destination._id} />
-        ))}
-      </div>
-    </div>
-  ) : (
-    // <div className="flex flex-col items-center justify-center h-screen">
-    //   <h1 className="text-3xl font-bold text-center">Contact Us</h1>
-    //   <p className="text-lg text-center mt-4 max-w-xl">
-    //     If you have any questions, feedback, or inquiries, feel free to reach
-    //     out to us! We're here to help and would love to hear from you. You can
-    //     contact us via email at{" "}
-    //     <a href="mailto:support@visitceylon.lk" className="text-blue-500">
-    //       support@visitceylon.lk
-    //     </a>
-    //   </p>
-    // </div>
-    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12 text-center bg-gray-50">
-      <h1 className="text-4xl font-extrabold text-gray-900 mb-6">Contact Us</h1>
-
-      <p className="text-lg text-gray-700 max-w-2xl leading-relaxed">
-        We’d love to hear from you! Whether you have a question, need support,
-        or want to share feedback about your experience, the VisitCeylon team is
-        always ready to assist.
-        <br />
-        <br />
-        VisitCeylon aims to make heritage exploration in Sri Lanka simple,
-        smooth, and memorable — and your feedback helps us improve every day.
-      </p>
-
-      <div className="mt-10 bg-white shadow-lg rounded-xl p-6 w-full max-w-md text-left">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Get in Touch
-        </h2>
-        <p className="mb-2">
-          <span className="font-semibold">📍 Address:</span> VisitCeylon Support
-          Center, Colombo, Sri Lanka
-        </p>
-        <p className="mb-2">
-          <span className="font-semibold">📧 Email:</span>{" "}
-          <a
-            href="mailto:support@visitceylon.lk"
-            className="text-blue-600 hover:underline"
-          >
-            support@visitceylon.lk
-          </a>
-        </p>
-        <p className="mb-2">
-          <span className="font-semibold">🌐 Website:</span>{" "}
-          <a
-            href="https://www.visitceylon.lk"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
-          >
-            www.visitceylon.lk
-          </a>
-        </p>
-        <p className="mb-2">
-          <span className="font-semibold">📱 Hotline:</span> +94 77 123 4567
-        </p>
+  return (
+    <section className="relative min-h-screen bg-[#030406] px-4 py-20 text-white flex items-center justify-center overflow-hidden z-[-3]">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#01343640] to-transparent" />
+        <div className="absolute left-1/2 top-0 -translate-x-1/2 w-[75%] max-w-4xl h-full bg-teal-300/15 blur-[200px]" />
       </div>
 
-      <p className="text-sm text-gray-600 mt-6">
-        Our support team is available Monday to Friday, 9:00 AM – 5:00 PM
-        (GMT+5:30).
-        <br />
-        We’ll respond as soon as possible to ensure your journey through Sri
-        Lanka’s heritage sites remains unforgettable.
-      </p>
-    </div>
+      <article className="w-full max-w-4xl rounded-[32px] border border-white/5 bg-gradient-to-r from-[#04161c] via-[#031116] to-[#05080c] shadow-[0_30px_55px_rgba(0,0,0,0.45)] p-6 sm:p-10 backdrop-blur">
+        <div className="flex flex-col items-center text-center gap-4 mb-10">
+          <img
+            src="/src/assets/logo.svg"
+            alt="VisitCeylon logo"
+            className="h-14 w-auto opacity-90"
+          />
+          <div className="space-y-2">
+            <p className="text-white/70 text-sm uppercase tracking-[0.3em]">
+              Your VisitCeylon Crew
+            </p>
+            <h1 className="text-3xl sm:text-4xl font-semibold">
+              Tell us how we can help
+            </h1>
+          </div>
+          <p className="text-base sm:text-lg text-white/70 max-w-3xl leading-relaxed">
+            We’d love to hear from you! Whether you have a question, need
+            support, or want to share feedback about your experience, the
+            VisitCeylon team is always ready to assist. Every message helps us
+            craft smoother, more magical journeys.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 gap-6">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm text-white/60 uppercase tracking-[0.2em]">
+              Write to us
+            </p>
+            <p className="text-xl font-semibold mt-2">support@visitceylon.lk</p>
+            <p className="text-white/70 text-sm mt-1">
+              We reply within one business day.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm text-white/60 uppercase tracking-[0.2em]">
+              Call the desk
+            </p>
+            <p className="text-xl font-semibold mt-2">+94 77 123 4567</p>
+            <p className="text-white/70 text-sm mt-1">
+              Monday to Friday · 9:00 AM – 5:00 PM (GMT+5:30)
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm text-white/60 uppercase tracking-[0.2em]">
+              Visit us
+            </p>
+            <p className="text-xl font-semibold mt-2">
+              VisitCeylon Support Center
+            </p>
+            <p className="text-white/70 text-sm mt-1">
+              Colombo 07, Western Province, Sri Lanka
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm text-white/60 uppercase tracking-[0.2em]">
+              Explore online
+            </p>
+            <p className="text-xl font-semibold mt-2">www.visitceylon.lk</p>
+            <p className="text-white/70 text-sm mt-1">
+              Follow live updates on new destinations and promos.
+            </p>
+          </div>
+        </div>
+      </article>
+    </section>
   );
 };
 

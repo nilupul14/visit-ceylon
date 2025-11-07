@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import Calendar from "./Calender";
 import { useAppContext } from "../context/AppContext";
 import BlurCircle from "./BlurCircle";
 
@@ -19,7 +18,12 @@ const generateBookingId = () => {
   return `bk_${Date.now()}`;
 };
 
-const BookingForm = ({ destination, availability = {} }) => {
+const BookingForm = ({
+  destination,
+  availability = {},
+  selectedDate,
+  onResetSelectedDate,
+}) => {
   const { axios, getToken, user } = useAppContext();
   const [bookingId, setBookingId] = useState(generateBookingId);
   const [visitTime, setVisitTime] = useState(VISIT_TIME_OPTIONS[0].label);
@@ -28,21 +32,6 @@ const BookingForm = ({ destination, availability = {} }) => {
 
   const availableDates = useMemo(() => Object.keys(availability || {}).sort(), [availability]);
   const hasAvailability = availableDates.length > 0;
-
-  const initialDate = useMemo(() => {
-    if (availableDates.length > 0) {
-      return new Date(`${availableDates[0]}T00:00:00`);
-    }
-    return new Date();
-  }, [availableDates]);
-
-  const [visitDate, setVisitDate] = useState(null);
-
-  const marks = useMemo(() => availableDates, [availableDates]);
-
-  const handleDateSelect = (selectedDate) => {
-    setVisitDate(selectedDate);
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -57,7 +46,7 @@ const BookingForm = ({ destination, availability = {} }) => {
       return;
     }
 
-    if (!visitDate) {
+    if (!selectedDate) {
       toast.error("Please choose a visit date from the calendar.");
       return;
     }
@@ -72,7 +61,7 @@ const BookingForm = ({ destination, availability = {} }) => {
       bookingId,
       user: user.id,
       destination: destination._id,
-      visitDate: formatDateInput(visitDate),
+      visitDate: formatDateInput(selectedDate),
       visitTime: slot.value,
       amount: Number(amount),
       userName: user.fullName || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
@@ -99,7 +88,7 @@ const BookingForm = ({ destination, availability = {} }) => {
         setBookingId(generateBookingId());
         setAmount(1);
         setVisitTime(VISIT_TIME_OPTIONS[0].label);
-        setVisitDate(null);
+        onResetSelectedDate?.();
       } else {
         toast.error(data?.message || "Failed to create booking.");
       }
@@ -111,7 +100,8 @@ const BookingForm = ({ destination, availability = {} }) => {
     }
   };
 
-  const displayDate = visitDate ? formatDateInput(visitDate) : "";
+  const displayDate = selectedDate ? formatDateInput(selectedDate) : "";
+  const isFormEnabled = Boolean(selectedDate);
 
   return (
     <section className="relative mt-16 overflow-hidden rounded-2xl border border-primary/20 bg-primary/10 p-6 text-slate-100 shadow-xl backdrop-blur">
@@ -172,6 +162,7 @@ const BookingForm = ({ destination, availability = {} }) => {
               <select
                 value={visitTime}
                 onChange={(event) => setVisitTime(event.target.value)}
+                disabled={!isFormEnabled}
                 className="mt-1 rounded-lg border border-primary/25 bg-black/20 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/40"
               >
                 {VISIT_TIME_OPTIONS.map((option) => (
@@ -190,17 +181,16 @@ const BookingForm = ({ destination, availability = {} }) => {
               min={1}
               value={amount}
               onChange={(event) => setAmount(Number(event.target.value))}
+              disabled={!isFormEnabled}
               className="mt-1 rounded-lg border border-primary/25 bg-black/20 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/40"
             />
           </div>
         </div>
 
-        <Calendar initialDate={initialDate} value={visitDate} marks={marks} onSelect={handleDateSelect} />
-
         <div className="lg:col-span-2 flex justify-end">
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || !isFormEnabled}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white shadow shadow-primary/40 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? "Saving..." : "Confirm Booking"}

@@ -5,7 +5,7 @@ const weekdayLabels = ["M", "T", "W", "T", "F", "S", "S"];
 
 // marks is an array of ISO date strings (yyyy-mm-dd) to highlight like meetings
 export default function Calendar({ initialDate = new Date(), marks = [], value = null, onSelect }) {
-  const safeInitial = value || initialDate;
+  const safeInitial = value || initialDate || new Date();
   const [activeDate, setActiveDate] = useState(safeInitial);
   const [selected, setSelected] = useState(value ?? null);
 
@@ -37,17 +37,17 @@ export default function Calendar({ initialDate = new Date(), marks = [], value =
   };
 
   return (
-    <section className="w-full max-w-xs rounded-2xl bg-slate-900/80 px-4 pb-4 pt-5 text-slate-100 shadow-lg ring-1 ring-white/5">
+    <section className="w-full max-w-[420px] rounded-[24px] border border-primary/20 bg-gradient-to-br from-[#04161c] via-[#031116] to-[#05080c] px-5 pb-5 pt-6 text-slate-100 shadow-[0_25px_50px_rgba(0,0,0,0.45)]">
       {/* Header */}
       <header className="mb-4 flex items-center justify-between">
         <button
           type="button"
           onClick={() => handleMonthShift(-1)}
-          className="grid h-8 w-8 place-items-center rounded-full bg-slate-800/80 text-slate-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-slate-200 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <div className="text-sm font-semibold tracking-wide uppercase text-slate-200">
+        <div className="text-sm font-semibold tracking-wide uppercase text-slate-100">
           {activeDate.toLocaleDateString("en-US", {
             month: "long",
             year: "numeric",
@@ -56,14 +56,14 @@ export default function Calendar({ initialDate = new Date(), marks = [], value =
         <button
           type="button"
           onClick={() => handleMonthShift(1)}
-          className="grid h-8 w-8 place-items-center rounded-full bg-slate-800/80 text-slate-300 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-slate-200 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
       </header>
 
       {/* Weekday labels */}
-      <div className="mb-1 grid grid-cols-7 text-center text-xs font-medium uppercase tracking-wide text-slate-400">
+      <div className="mb-2 grid grid-cols-7 text-center text-xs font-medium uppercase tracking-wide text-white/50">
         {weekdayLabels.map((day) => (
           <div key={day} className="py-1">
             {day}
@@ -72,7 +72,7 @@ export default function Calendar({ initialDate = new Date(), marks = [], value =
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-y-2 text-sm text-slate-200">
+      <div className="grid grid-cols-7 gap-y-2 text-sm text-white">
         {matrix.map((day) => {
           const isCurrentMonth = day.getMonth() === activeDate.getMonth();
           const isSelected = selected ? sameDay(day, selected) : false;
@@ -85,18 +85,18 @@ export default function Calendar({ initialDate = new Date(), marks = [], value =
               type="button"
               onClick={() => handleSelect(day)}
               className={[
-                "relative mx-auto grid h-10 w-10 place-items-center rounded-lg transition",
+                "relative mx-auto grid h-10 w-10 place-items-center rounded-lg border border-white/5 transition",
                 isSelected
-                  ? "bg-indigo-500 text-white shadow shadow-indigo-500/40"
-                  : "hover:bg-slate-800/70 focus:bg-slate-800/70",
-                !isCurrentMonth && "text-slate-500",
+                  ? "bg-primary text-white shadow shadow-primary/40"
+                  : "bg-white/5 hover:bg-white/10 focus:bg-white/10",
+                !isCurrentMonth && "text-white/40",
               ]
                 .filter(Boolean)
                 .join(" ")}
             >
               {day.getDate()}
               {hasMark && !isSelected && (
-                <Dot className="absolute bottom-1 h-3 w-3 text-indigo-400" />
+                <Dot className="absolute bottom-1 h-3 w-3 text-primary" />
               )}
             </button>
           );
