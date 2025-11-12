@@ -3,14 +3,24 @@ import Loading from "../../components/Loading";
 import Title from "../../components/admin/Title";
 import { dateFormat } from "../../lib/dateFormat";
 import { useAppContext } from "../../context/AppContext";
+import toast from "react-hot-toast";
 
 const ListDestinations = () => {
   const currency = import.meta.env.VITE_CURRENCY;
 
-  const { axios, getToken, user, destinations, bookingsApi } = useAppContext();
+  const {
+    axios,
+    getToken,
+    user,
+    destinations,
+    bookingsApi,
+    fetchShows
+  } = useAppContext();
 
   const [shows, setShows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmDestination, setConfirmDestination] = useState(null);
+  const [deletingDestination, setDeletingDestination] = useState(false);
 
   const getAllShows = async () => {
     try {
@@ -85,6 +95,36 @@ const ListDestinations = () => {
     0
   );
 
+  const openDeleteModal = (destination) => {
+    setConfirmDestination(destination);
+  };
+
+  const closeDeleteModal = () => {
+    if (deletingDestination) return;
+    setConfirmDestination(null);
+  };
+
+  const handleDeleteDestination = async () => {
+    if (!confirmDestination?._id) return;
+    try {
+      setDeletingDestination(true);
+      const token = await getToken();
+      await axios.delete(`/api/destinations/${confirmDestination._id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+      });
+      toast.success("Destination deleted successfully");
+      await fetchShows?.();
+      closeDeleteModal();
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.message || "Failed to delete destination"
+      );
+    } finally {
+      setDeletingDestination(false);
+    }
+  };
+
   return !loading ? (
     <>
       <Title text1="List" text2="Destinations" />
@@ -110,6 +150,7 @@ const ListDestinations = () => {
               <th className="p-2 font-medium">Price Rate</th>
               <th className="p-2 font-medium">Total Bookings</th>
               <th className="p-2 font-medium">Earnings</th>
+              <th className="p-2 font-medium text-center">Action</th>
             </tr>
           </thead>
           <tbody className="text-sm font-light">
@@ -133,11 +174,53 @@ const ListDestinations = () => {
                     statsByDestination.get(destination._id)?.totalAmount || 0
                   ).toLocaleString()}
                 </td>
+                <td className="p-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => openDeleteModal(destination)}
+                    className="text-sm px-3 py-1 rounded-md border border-red-400 text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {confirmDestination && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-md rounded-xl bg-gray-900 border border-gray-700 p-6 text-center">
+            <h3 className="text-xl font-semibold">Delete Destination</h3>
+            <p className="mt-3 text-sm text-gray-300 leading-relaxed">
+              Are you sure you want to delete{" "}
+              <span className="text-white font-semibold">
+                {confirmDestination.title}
+              </span>
+              ? This will remove all upcoming visits tied to this destination.
+            </p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                className="flex-1 rounded-md border border-gray-600 px-4 py-2 text-sm hover:bg-gray-800 transition-colors cursor-pointer"
+                disabled={deletingDestination}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteDestination}
+                disabled={deletingDestination}
+                className="flex-1 rounded-md bg-red-500/80 hover:bg-red-500 px-4 py-2 text-sm font-semibold text-white transition-colors cursor-pointer disabled:opacity-60"
+              >
+                {deletingDestination ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   ) : (
     <Loading />

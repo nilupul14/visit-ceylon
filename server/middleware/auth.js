@@ -2,21 +2,26 @@ import { clerkClient } from "@clerk/express";
 
 export const protectAdmin = async (req, res, next) => {
   try {
-    const { userId } = req.auth();
+    const auth = typeof req.auth === "function" ? req.auth() : req.auth;
+    const userId = auth?.userId;
 
-    const user = await clerkClient.users.getUser(userId);
-
-    console.log("Admin - user", user.privateMetadata);
-
-    if (user.privateMetadata.role === "admin") {
-      next();
-      return res.json({ success: true, message: "you're authorized" });
-    } else {
-      return res.json({ success: false, message: "not authorized" });
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Authentication required" });
     }
 
-    // next();
+    const user = await clerkClient.users.getUser(userId);
+    const role = user?.privateMetadata?.role;
+
+    console.log("Admin - user", user?.privateMetadata);
+
+    if (role === "admin") {
+      req.user = user;
+      return next();
+    }
+
+    return res.status(403).json({ success: false, message: "Not authorized" });
   } catch (error) {
-    return res.json({ success: false, message: "not authorized" });
+    console.error("protectAdmin error:", error);
+    return res.status(401).json({ success: false, message: "Not authorized" });
   }
 };

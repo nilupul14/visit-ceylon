@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 // import { dummyDateTimeData, dummyShowsData } from '../assets/assets'
 import { dummyDateTimeData } from "../assets/assets";
 import BlurCircle from "../components/BlurCircle";
-import { Heart, MapPinIcon, StarIcon } from "lucide-react";
+import { Heart, MapPinIcon, StarIcon, CalendarClockIcon, HandCoinsIcon } from "lucide-react";
 import Calendar from "../components/Calender";
 import BookingForm from "../components/BookingForm";
 import DestinationCard from "../components/DestinationCard";
@@ -18,7 +18,6 @@ const DestinationDetails = () => {
 
   const API = "/api/bookings";
 
-
   const {
     axios,
     getToken,
@@ -28,13 +27,31 @@ const DestinationDetails = () => {
     favoriteMovies = [],
   } = useAppContext();
 
+  const destinationsRef = useRef(destinations);
+  useEffect(() => {
+    destinationsRef.current = destinations;
+  }, [destinations]);
+
+  const resolveFallbackDestination = () => {
+    const list = destinationsRef.current;
+    if (!Array.isArray(list) || list.length === 0) return null;
+    const numericId = Number(id);
+    return (
+      list.find((item) => {
+        const stringMatch =
+          String(item._id) === String(id) || String(item.id) === String(id);
+        const numericMatch = !Number.isNaN(numericId) && item.id === numericId;
+        return stringMatch || numericMatch;
+      }) || null
+    );
+  };
+
   const suggestedDestinations = useMemo(() => {
     if (!Array.isArray(destinations) || destinations.length === 0) return [];
     return destinations.slice(0, 4);
   }, [destinations]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const getDestination = async () => {
+  const getDestination = useCallback(async () => {
     try {
       const { data } = await axios.get(`/api/destinations/${id}`);
       console.log("Fetched destination data:", data.destination);
@@ -46,19 +63,15 @@ const DestinationDetails = () => {
       console.log("API error, using dummy data...", error);
     }
 
-    // 2) fallback to dummy
-    // const numericId = Number(id);
-    // const fallbackMovie =
-    //   destinations.find(
-    //     (location) => location._id === id || location.id === numericId
-    //   ) || destinations[0];
+    const fallback = resolveFallbackDestination();
+    if (fallback) {
+      setDestination(fallback);
+      return;
+    }
 
-    // setDestination({
-    //   destination: fallbackMovie,
-    //   // you already import dummyDateTimeData
-    //   dateTime: dummyDateTimeData
-    // });
-  };  
+    toast.error("Destination not found");
+    navigate("/destinations");
+  }, [axios, id, navigate]);
 
   const handleFavorite = async () => {
     try {
@@ -68,7 +81,7 @@ const DestinationDetails = () => {
         "/api/user/update-favorite",
         { movieId: id },
         {
-          headers: { Authorization: `Bearer ${await getToken()}` }
+          headers: { Authorization: `Bearer ${await getToken()}` },
         }
       );
 
@@ -98,9 +111,15 @@ const DestinationDetails = () => {
 
   useEffect(() => {
     getDestination();
-  }, [getDestination, id]);
+  }, [getDestination]);
 
   if (!destination) return <Loading />;
+
+  const categoryList = Array.isArray(destination.category)
+  ? destination.category
+      .map((item) => (typeof item === "string" ? item : item?.name))
+      .filter(Boolean)
+  : [];
 
   const openMap = () => {
     const query = encodeURIComponent(destination.title + " Sri Lanka");
@@ -128,7 +147,7 @@ const DestinationDetails = () => {
             {destination?.description}
           </div>
 
-          <p>
+          {/* <p>
             {destination?.category
               ? destination?.category.map((g) => g.name).join(", ")
               : "—"}{" "}
@@ -136,6 +155,12 @@ const DestinationDetails = () => {
             {!destination?.category
               ? destination?.release_date.split("-")[0]
               : "Explore"}
+          </p> */}
+          <p>
+            {categoryList.length > 0 ? categoryList.join(", ") : "—"} •{" "}
+            {destination?.release_date
+              ? destination.release_date.split("-")[0]
+              : destination?.dateAndTime || "Explore"}
           </p>
 
           <div className="flex items-center gap-2 text-gray-300">
@@ -143,15 +168,33 @@ const DestinationDetails = () => {
             {(destination?.vote_average ?? 0).toFixed(1)} Google Rating
           </div>
 
+
+          <div className="flex items-center gap-2 text-gray-300">
+            <CalendarClockIcon className="w-5 h-5 text-primary fill-primary" />
+            Date and Time: {destination?.date_time}
+          </div>
+
+
+          <div className="flex items-center gap-2 text-gray-300">
+            <HandCoinsIcon className="w-5 h-5 text-primary fill-primary" />
+            Price : ${destination?.price}
+          </div>
+
           <div className="flex items-center flex-wrap gap-4 mt-4">
-            <button className="flex items-center gap-2 px-7 py-3 text-sm bg-gray-800 hover:bg-gray-900 transition rounded-md font-medium cursor-pointer active:scale-95" onClick={() => openMap()}>
+            <button
+              className="flex items-center gap-2 px-7 py-3 text-sm bg-gray-800 hover:bg-gray-900 transition rounded-md font-medium cursor-pointer active:scale-95"
+              onClick={() => openMap()}
+            >
               <MapPinIcon className="w-5 h-5" /> Map View
             </button>
 
             <button
               onClick={() => {
                 setCalendarPulse(true);
-                calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                calendarRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
                 requestAnimationFrame(() => {
                   setTimeout(() => setCalendarPulse(false), 1200);
                 });
@@ -216,8 +259,8 @@ const DestinationDetails = () => {
         <div className="flex flex-col gap-3 mb-6">
           <h2 className="text-2xl font-semibold">Choose your visit date</h2>
           <p className="text-sm text-gray-300">
-            Tap a highlighted date to enable the booking form. Once selected, continue below to pick a
-            time and confirm tickets.
+            Tap a highlighted date to enable the booking form. Once selected,
+            continue below to pick a time and confirm tickets.
           </p>
           {selectedDate && (
             <p className="text-xs uppercase tracking-wide text-primary">

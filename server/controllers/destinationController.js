@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import mongoose from "mongoose";
 import Destination from "../models/Destination.js";
 import Visit from "../models/Visit.js";
 import { inngest } from "../inngest/index.js";
@@ -9,109 +8,183 @@ function buildDateFromParts(dateStr, timeStr) {
   return new Date(`${dateStr}T${timeStr}:00`);
 }
 
-// POST /api/destinations/seed
-// Accepts either:
-//  - req.body.destinations: array of destination objects (preferred)
-//  - or auto-extracts dummyShowsData from client/src/assets/assets.js (best-effort)
-export const seedDestinations = async (req, res) => {
+const normalizeCategoryInput = (input) => {
+  if (!Array.isArray(input)) return [];
+  return input
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      if (item && typeof item === "object" && typeof item.name === "string") {
+        return item.name.trim();
+      }
+      return "";
+    })
+    .filter(Boolean);
+};
+
+const buildDestinationFilter = (identifier) => {
+  if (!identifier) return null;
+  const clauses = [];
+
+  if (mongoose.Types.ObjectId.isValid(identifier)) {
+    clauses.push({ _id: new mongoose.Types.ObjectId(identifier) });
+  }
+
+  clauses.push({ _id: identifier });
+
+  const numericId = Number(identifier);
+  if (!Number.isNaN(numericId)) {
+    clauses.push({ id: numericId });
+  }
+
+  if (clauses.length === 0) return null;
+  return { $or: clauses };
+};
+
+// POST /api/destinations/add
+export const addDestination = async (req, res) => {
   try {
-    let destinations = Array.isArray(req.body?.destinations)
-      ? req.body.destinations
-      : null;
+    const {
+      title,
+      description,
+      dateAndTime,
+      image,
+      poster_path: posterPathFromBody,
+      categories,
+      category,
+      price,
+      vote_average,
+      vote_count,
+    } = req.body || {};
 
-    // Fallback: try extracting from client dummy file without importing assets
-    if (!destinations) {
-      // Try both repo-root and parent-of-server locations
-      const candidatePaths = [
-        path.resolve(process.cwd(), "client/src/assets/assets.js"),
-        path.resolve(process.cwd(), "../client/src/assets/assets.js"),
-      ];
-
-      const clientAssetsPath = candidatePaths.find((p) => fs.existsSync(p));
-      if (!clientAssetsPath) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "No destinations provided and client assets file not found. POST { destinations: [...] } to seed.",
-        });
-      }
-
-      const src = fs.readFileSync(clientAssetsPath, "utf8");
-      const startToken = "export const dummyShowsData = [";
-      const endToken = "export const dummyDateTimeData"; // next export after array
-      const startIdx = src.indexOf(startToken);
-      const endIdx = src.indexOf(endToken, startIdx);
-      if (startIdx === -1 || endIdx === -1) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Could not locate dummyShowsData in assets.js. POST { destinations: [...] } instead.",
-        });
-      }
-
-      const arrayMatch = src
-        .slice(startIdx, endIdx)
-        .match(/export const dummyShowsData\s*=\s*(\[[\s\S]*\])/);
-
-      if (!arrayMatch) {
-        return res.status(400).json({
-          success: false,
-          message: "Failed to parse dummyShowsData array; please POST destinations manually.",
-        });
-      }
-
-      // eslint-disable-next-line no-new-func
-      const parsed = new Function(`return ${arrayMatch[1]};`)();
-      if (!Array.isArray(parsed) || parsed.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Parsed data is not a non-empty array.",
-        });
-      }
-      destinations = parsed;
+    if (
+      !title?.trim() ||
+      !description?.trim() ||
+      !dateAndTime?.trim() ||
+      !(image?.trim() || posterPathFromBody?.trim()) ||
+      price == null
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "title, description, dateAndTime, image and price are required",
+      });
     }
 
-    // Minimal validation + normalization
-    const normalized = destinations
-      .filter(Boolean)
-      .map((doc) => ({
-        _id: String(doc._id ?? doc.id), // prefer explicit _id; fall back to id
-        id: doc.id != null ? Number(doc.id) : undefined,
-        title: String(doc.title ?? ""),
-        description: String(doc.description ?? ""),
-        poster_path: String(doc.poster_path ?? ""),
-        backdrop_path: String(doc.backdrop_path ?? ""),
-        category: Array.isArray(doc.category) ? doc.category : [],
-        tagline: String(doc.tagline ?? ""),
-        vote_average: Number(doc.vote_average ?? 0),
-        vote_count: Number(doc.vote_count ?? 0),
-        runtime: Number(doc.runtime ?? 0),
-        price: Number(doc.price ?? 0) // ← include price
-      }))
-      .filter((d) => d._id && d.title); // require at least id + title
+    const categoryList = normalizeCategoryInput(categories ?? category);
+    const posterPath = (posterPathFromBody || image).trim();
+    const parsedPrice = Number(price);
 
-    if (normalized.length === 0) {
-      return res.status(400).json({ success: false, message: "No valid destinations to seed." });
+    if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "price must be a positive number",
+      });
     }
 
-    // Upsert by _id
-    const ops = normalized.map((d) => ({
-      updateOne: {
-        filter: { _id: d._id },
-        update: { $set: d },
-        upsert: true,
-      },
-    }));
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      dateAndTime: dateAndTime.trim(),
+      poster_path: posterPath,
+      category: categoryList,
+      price: parsedPrice,
+    };
 
-    const result = await Destination.bulkWrite(ops, { ordered: false });
+    if (vote_average != null) {
+      payload.vote_average = Number(vote_average) || 0;
+    }
+    if (vote_count != null) {
+      payload.vote_count = Number(vote_count) || 0;
+    }
+
+    const destination = await Destination.create(payload);
+
+    return res.status(201).json({
+      success: true,
+      message: "Destination added successfully",
+      destination,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// PUT /api/destinations/:destinationId
+export const updateDestination = async (req, res) => {
+  try {
+    const { destinationId } = req.params;
+    const filter = buildDestinationFilter(destinationId);
+    if (!filter) {
+      return res.status(404).json({ success: false, message: "Destination not found" });
+    }
+
+    const {
+      title,
+      description,
+      dateAndTime,
+      image,
+      poster_path: posterPathFromBody,
+      categories,
+      category,
+      price,
+      vote_average,
+      vote_count,
+    } = req.body || {};
+
+    if (
+      !title?.trim() ||
+      !description?.trim() ||
+      !dateAndTime?.trim() ||
+      !(image?.trim() || posterPathFromBody?.trim()) ||
+      price == null
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "title, description, dateAndTime, image and price are required",
+      });
+    }
+
+    const existing = await Destination.findOne(filter);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Destination not found" });
+    }
+
+    const categoryList = normalizeCategoryInput(categories ?? category);
+    const posterPath = (posterPathFromBody || image).trim();
+    const parsedPrice = Number(price);
+
+    if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "price must be a positive number",
+      });
+    }
+
+    const payload = {
+      title: title.trim(),
+      description: description.trim(),
+      dateAndTime: dateAndTime.trim(),
+      poster_path: posterPath,
+      category: categoryList,
+      price: parsedPrice,
+    };
+
+    if (vote_average != null) {
+      payload.vote_average = Number(vote_average) || 0;
+    }
+    if (vote_count != null) {
+      payload.vote_count = Number(vote_count) || 0;
+    }
+
+    const updated = await Destination.findOneAndUpdate(filter, payload, {
+      new: true,
+      runValidators: true,
+    });
 
     return res.json({
       success: true,
-      requested: destinations.length,
-      processed: normalized.length,
-      upserted: result.upsertedCount ?? 0,
-      modified: result.modifiedCount ?? 0,
-      matched: result.matchedCount ?? 0,
+      message: "Destination updated successfully",
+      destination: updated,
     });
   } catch (error) {
     console.error(error);
@@ -122,19 +195,25 @@ export const seedDestinations = async (req, res) => {
 // GET /api/destinations
 export const getDestinations = async (_req, res) => {
   try {
-    const destinations = await Destination.find({}, {
+    const destinationsDocs = await Destination.find({}, {
       // project only what your UI needs
       _id: 1,
       title: 1,
       poster_path: 1,
-      backdrop_path: 1,
       category: 1,
-      tagline: 1,
+      description: 1,
+      dateAndTime: 1,
       price: 1,
-      vote_average: 1
+      vote_average: 1,
+      vote_count: 1,
     })
       .sort({ title: 1 })
       .lean();
+
+    const destinations = destinationsDocs.map((doc) => ({
+      ...doc,
+      category: normalizeCategoryInput(doc?.category ?? []),
+    }));
 
     return res.json({ success: true, destinations });
   } catch (error) {
@@ -147,11 +226,46 @@ export const getDestinations = async (_req, res) => {
 export const getDestination = async (req, res) => {
   try {
     const { destinationId } = req.params;
-    const destination = await Destination.findById(String(destinationId)).lean();
+    const filter = buildDestinationFilter(destinationId);
+    if (!filter) {
+      return res.status(404).json({ success: false, message: "Destination not found" });
+    }
+
+    const destinationDoc = await Destination.findOne(filter).lean();
+
+    if (!destinationDoc) {
+      return res.status(404).json({ success: false, message: "Destination not found" });
+    }
+
+    const destination = {
+      ...destinationDoc,
+      category: normalizeCategoryInput(destinationDoc?.category ?? []),
+    };
+    return res.json({ success: true, destination });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// DELETE /api/destinations/:destinationId
+export const deleteDestination = async (req, res) => {
+  try {
+    const { destinationId } = req.params;
+    const filter = buildDestinationFilter(destinationId);
+    if (!filter) {
+      return res.status(404).json({ success: false, message: "Destination not found" });
+    }
+
+    const destination = await Destination.findOne(filter);
     if (!destination) {
       return res.status(404).json({ success: false, message: "Destination not found" });
     }
-    return res.json({ success: true, destination });
+
+    await Visit.deleteMany({ destination: String(destination._id) });
+    await destination.deleteOne();
+
+    return res.json({ success: true, message: "Destination deleted successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ success: false, message: error.message });

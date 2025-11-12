@@ -7,6 +7,16 @@ const DestinationCard = ({ destination }) => {
   const navigate = useNavigate();
   const { image_base_url } = useAppContext();
 
+  const categoryList = Array.isArray(destination.category)
+    ? destination.category
+        .map((item) => (typeof item === "string" ? item : item?.name))
+        .filter(Boolean)
+    : [];
+
+  const posterSrc = destination.poster_path?.startsWith("http")
+    ? destination.poster_path
+    : image_base_url + destination.poster_path;
+
   return (
     <div className="flex flex-col justify-between p-3 bg-gray-800 rounded-2xl hover:-translate-y-1 transition duration-300 w-66">
       <img
@@ -14,24 +24,18 @@ const DestinationCard = ({ destination }) => {
           navigate(`/destinations/${destination._id}`);
           scrollTo(0, 0);
         }}
-        src={
-          destination.poster_path?.startsWith("http")
-            ? destination.poster_path
-            : image_base_url + destination.poster_path
-        }
+        src={posterSrc}
         alt=""
         className="rounded-lg h-52 w-full object-cover object-right-bottom cursor-pointer"
       />
 
       <p className="font-semibold mt-2 truncate">{destination.title}</p>
 
-      <p className="text-sm text-gray-400 mt-2">
-        •{" "}
-        {destination.category
-          .slice(0, 2)
-          .map((type) => type.name)
-          .join(" | ")}
-      </p>
+      {categoryList.length > 0 && (
+        <p className="text-sm text-gray-400 mt-2">
+          • {categoryList.slice(0, 2).join(" | ")}
+        </p>
+      )}
 
       <div className="flex items-center justify-between mt-4 pb-3">
         <button
@@ -46,7 +50,7 @@ const DestinationCard = ({ destination }) => {
 
         <p className="flex items-center gap-1 text-sm text-gray-400 mt-1 pr-1">
           <StarIcon className="w-4 h-4 text-primary fill-primary" />
-          {destination.vote_average.toFixed(1)}
+          {Number(destination.vote_average ?? 0).toFixed(1)}
         </p>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import express from "express";
 import {
-  seedDestinations,
+  addDestination,
+  updateDestination,
+  deleteDestination,
   getDestinations,
   getDestination,
   addVisit,
@@ -9,8 +11,10 @@ import {
 
 const destinationRouter = express.Router();
 
-// Seed destinations from dummy data (see controller notes)
-destinationRouter.post("/seed", seedDestinations);
+// Add destinations from dummy data (see controller notes)
+destinationRouter.post("/add", addDestination);
+destinationRouter.put("/:destinationId", updateDestination);
+destinationRouter.delete("/:destinationId", deleteDestination);
 
 // Destination browsing
 destinationRouter.get("/", getDestinations);
