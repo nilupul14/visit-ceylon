@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -70,19 +70,29 @@ export const AppProvider = ({ children })=>{
         }
     }
 
-    const fetchFavoriteMovies = async ()=>{
+    const fetchFavoriteMovies = useCallback(async ()=>{
         try {
-            const { data } = await axios.get('/api/user/favorites', {headers: {Authorization: `Bearer ${await getToken()}`}})
+            const token = getToken ? await getToken() : null;
+            if(!token){
+                setFavoriteMovies([]);
+                return;
+            }
 
-            if(data.success){
-                setFavoriteMovies(data.movies)
+            const { data } = await axios.get('/api/user/favorites', {
+                headers: {Authorization: `Bearer ${token}`}
+            })
+
+            if(data?.success){
+                setFavoriteMovies(data.destinations || data.movies || [])
             }else{
-                toast.error(data.message)
+                toast.error(data?.message || 'Unable to load favorites')
+                setFavoriteMovies([])
             }
         } catch (error) {
             console.error(error)
+            setFavoriteMovies([])
         }
-    }
+    }, [axios, getToken])
 
     useEffect(()=>{
         fetchShows()
@@ -93,8 +103,10 @@ export const AppProvider = ({ children })=>{
         if(user){
             fetchIsAdmin()
             fetchFavoriteMovies()
+        } else {
+            setFavoriteMovies([])
         }
-    },[user])
+    },[user, fetchFavoriteMovies])
 
     const value = {
         axios,

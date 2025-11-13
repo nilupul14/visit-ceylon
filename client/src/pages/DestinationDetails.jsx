@@ -15,8 +15,8 @@ const DestinationDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [destination, setDestination] = useState(null);
-
-  const API = "/api/bookings";
+  const [availability, setAvailability] = useState({});
+  const [availabilityStatus, setAvailabilityStatus] = useState("loading");
 
   const {
     axios,
@@ -73,6 +73,32 @@ const DestinationDetails = () => {
     navigate("/destinations");
   }, [axios, id, navigate]);
 
+  const fetchAvailability = useCallback(
+    async (destinationId) => {
+      if (!destinationId) return;
+      setAvailabilityStatus("loading");
+      try {
+        const { data } = await axios.get(
+          `/api/destinations/${destinationId}/visits`
+        );
+        if (data?.success && data?.dateTime) {
+          setAvailability(data.dateTime);
+          setAvailabilityStatus(
+            Object.keys(data.dateTime).length ? "ready" : "empty"
+          );
+          return;
+        }
+        setAvailability({});
+        setAvailabilityStatus("empty");
+      } catch (error) {
+        console.log("Visit availability error, using demo data...", error);
+        setAvailability(dummyDateTimeData);
+        setAvailabilityStatus("fallback");
+      }
+    },
+    [axios]
+  );
+
   const handleFavorite = async () => {
     try {
       if (!user) return toast.error("Please login to proceed");
@@ -94,7 +120,6 @@ const DestinationDetails = () => {
     }
   };
 
-  const availability = destination?.availability || dummyDateTimeData;
   const availableDates = useMemo(
     () => (availability ? Object.keys(availability).sort() : []),
     [availability]
@@ -112,6 +137,17 @@ const DestinationDetails = () => {
   useEffect(() => {
     getDestination();
   }, [getDestination]);
+
+  useEffect(() => {
+    if (!destination) return;
+    const destinationId = destination?._id || destination?.id;
+    if (destinationId) {
+      fetchAvailability(destinationId);
+    } else {
+      setAvailability({});
+      setAvailabilityStatus("empty");
+    }
+  }, [destination, fetchAvailability]);
 
   if (!destination) return <Loading />;
 
@@ -164,19 +200,19 @@ const DestinationDetails = () => {
           </p>
 
           <div className="flex items-center gap-2 text-gray-300">
-            <StarIcon className="w-5 h-5 text-primary fill-primary" />
+            <StarIcon className="w-5 h-5 text-primary" />
             {(destination?.vote_average ?? 0).toFixed(1)} Google Rating
           </div>
 
 
           <div className="flex items-center gap-2 text-gray-300">
-            <CalendarClockIcon className="w-5 h-5 text-primary fill-primary" />
-            Date and Time: {destination?.date_time}
+            <CalendarClockIcon className="w-5 h-5 text-primary" />
+            {destination?.date_time}
           </div>
 
 
           <div className="flex items-center gap-2 text-gray-300">
-            <HandCoinsIcon className="w-5 h-5 text-primary fill-primary" />
+            <HandCoinsIcon className="w-5 h-5 text-primary" />
             Price : ${destination?.price}
           </div>
 
@@ -262,6 +298,16 @@ const DestinationDetails = () => {
             Tap a highlighted date to enable the booking form. Once selected,
             continue below to pick a time and confirm tickets.
           </p>
+          {availabilityStatus === "fallback" && (
+            <p className="text-xs text-amber-300">
+              Showing demo availability while we reconnect to the live schedule.
+            </p>
+          )}
+          {availabilityStatus === "empty" && (
+            <p className="text-xs text-slate-300/80">
+              No official slots yet—choose any date and we&apos;ll follow up.
+            </p>
+          )}
           {selectedDate && (
             <p className="text-xs uppercase tracking-wide text-primary">
               Selected:{" "}

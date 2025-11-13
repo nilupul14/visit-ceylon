@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
 import BlurCircle from "./BlurCircle";
@@ -24,14 +24,72 @@ const BookingForm = ({
   selectedDate,
   onResetSelectedDate,
 }) => {
-  const { axios, getToken, user } = useAppContext();
+  const { axios, getToken, user, fetchBookings } = useAppContext();
+  const currency = import.meta.env.VITE_CURRENCY || "$";
+
   const [bookingId, setBookingId] = useState(generateBookingId);
-  const [visitTime, setVisitTime] = useState(VISIT_TIME_OPTIONS[0].label);
+  const [selectedSlotValue, setSelectedSlotValue] = useState("");
   const [amount, setAmount] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
   const availableDates = useMemo(() => Object.keys(availability || {}).sort(), [availability]);
   const hasAvailability = availableDates.length > 0;
+  const slotOptions = useMemo(() => {
+    if (!selectedDate) return [];
+    const dateKey = formatDateInput(selectedDate);
+    const entries = Array.isArray(availability?.[dateKey]) ? availability[dateKey] : [];
+
+    const normalizedSlots = entries
+      .map((entry, index) => {
+        const rawTime = entry?.time || entry?.visitDateTime || entry;
+        if (!rawTime) return null;
+        const dateValue = new Date(rawTime);
+        if (Number.isNaN(dateValue.getTime())) return null;
+        const hhmm = dateValue.toISOString().slice(11, 16);
+        return {
+          key: String(entry?.visitId || entry?._id || entry?.showId || `${hhmm}-${index}`),
+          value: hhmm,
+          label: dateValue.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          visitId: entry?.visitId || entry?._id || entry?.showId || null,
+          isFallback: false,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.value.localeCompare(b.value));
+
+    if (normalizedSlots.length) {
+      return normalizedSlots;
+    }
+
+    return VISIT_TIME_OPTIONS.map((option, index) => ({
+      key: `fallback-${option.value}-${index}`,
+      value: option.value,
+      label: `${option.label} (${option.value})`,
+      isFallback: true,
+      visitId: null,
+    }));
+  }, [availability, selectedDate]);
+
+  const selectedSlot = useMemo(
+    () => slotOptions.find((option) => option.value === selectedSlotValue) || null,
+    [slotOptions, selectedSlotValue]
+  );
+
+  useEffect(() => {
+    if (!selectedDate) {
+      setSelectedSlotValue("");
+      return;
+    }
+    setSelectedSlotValue((prev) => {
+      if (prev && slotOptions.some((option) => option.value === prev)) {
+        return prev;
+      }
+      return slotOptions[0]?.value || "";
+    });
+  }, [selectedDate, slotOptions]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -51,18 +109,17 @@ const BookingForm = ({
       return;
     }
 
-    const slot = VISIT_TIME_OPTIONS.find((option) => option.label === visitTime);
-    if (!slot) {
+    if (!selectedSlotValue || !selectedSlot) {
       toast.error("Please choose a valid visit time.");
       return;
     }
 
     const payload = {
       bookingId,
-      user: user.id,
       destination: destination._id,
       visitDate: formatDateInput(selectedDate),
-      visitTime: slot.value,
+      visitTime: selectedSlot.value,
+      visitId: selectedSlot.visitId,
       amount: Number(amount),
       userName: user.fullName || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
       destinationTitle: destination.title,
@@ -84,11 +141,15 @@ const BookingForm = ({
       const { data } = await axios.post("/api/bookings", payload, { headers });
 
       if (data?.success) {
+        if (data?.url) {
+          window.location.href = data.url;
+          return;
+        }
         toast.success("Booking created successfully.");
         setBookingId(generateBookingId());
         setAmount(1);
-        setVisitTime(VISIT_TIME_OPTIONS[0].label);
         onResetSelectedDate?.();
+        fetchBookings?.();
       } else {
         toast.error(data?.message || "Failed to create booking.");
       }
@@ -102,6 +163,8 @@ const BookingForm = ({
 
   const displayDate = selectedDate ? formatDateInput(selectedDate) : "";
   const isFormEnabled = Boolean(selectedDate);
+  const pricePerTicket = Number(destination?.price) || 0;
+  const totalEstimate = pricePerTicket * (Number(amount) || 0);
 
   return (
     <section className="relative mt-16 overflow-hidden rounded-2xl border border-primary/20 bg-primary/10 p-6 text-slate-100 shadow-xl backdrop-blur">
@@ -160,17 +223,27 @@ const BookingForm = ({
             <div className="flex flex-col">
               <label className="text-sm font-medium text-slate-200">Visit Time</label>
               <select
-                value={visitTime}
-                onChange={(event) => setVisitTime(event.target.value)}
-                disabled={!isFormEnabled}
+                value={selectedSlotValue}
+                onChange={(event) => setSelectedSlotValue(event.target.value)}
+                disabled={!isFormEnabled || slotOptions.length === 0}
                 className="mt-1 rounded-lg border border-primary/25 bg-black/20 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/40"
               >
-                {VISIT_TIME_OPTIONS.map((option) => (
-                  <option key={option.label} value={option.label}>
-                    {option.label}
-                  </option>
-                ))}
+                {!isFormEnabled && <option value="">Pick a date first</option>}
+                {isFormEnabled && slotOptions.length === 0 && (
+                  <option value="">No slots for this date</option>
+                )}
+                {isFormEnabled &&
+                  slotOptions.map((option) => (
+                    <option key={option.key} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
               </select>
+              {isFormEnabled && selectedSlot?.isFallback && (
+                <p className="mt-1 text-xs text-amber-200">
+                  This is a custom request—we&apos;ll confirm the exact time after you submit.
+                </p>
+              )}
             </div>
           </div>
 
@@ -180,17 +253,28 @@ const BookingForm = ({
               type="number"
               min={1}
               value={amount}
-              onChange={(event) => setAmount(Number(event.target.value))}
+              onChange={(event) => {
+                const next = Number(event.target.value);
+                setAmount(Number.isNaN(next) ? 1 : Math.max(1, next));
+              }}
               disabled={!isFormEnabled}
               className="mt-1 rounded-lg border border-primary/25 bg-black/20 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/40"
             />
           </div>
         </div>
 
-        <div className="lg:col-span-2 flex justify-end">
+        <div className="lg:col-span-2 flex flex-col items-end gap-2">
+          {pricePerTicket > 0 && (
+            <p className="text-sm text-slate-300">
+              Estimated total:{" "}
+              <span className="font-semibold text-white">
+                {currency} {totalEstimate.toLocaleString()}
+              </span>
+            </p>
+          )}
           <button
             type="submit"
-            disabled={submitting || !isFormEnabled}
+            disabled={submitting || !isFormEnabled || !selectedSlotValue}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-white shadow shadow-primary/40 transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? "Saving..." : "Confirm Booking"}

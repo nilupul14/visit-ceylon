@@ -72,7 +72,7 @@ const Navbar = () => {
         >
           Map
         </Link>
-        {favoriteMovies.length > 0 && (
+        {favoriteMovies?.length > 0 && (
           <Link
             onClick={() => {
               scrollTo(0, 0);

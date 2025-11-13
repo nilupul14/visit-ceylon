@@ -120,16 +120,19 @@ const MyBookings = () => {
                 <div className="flex items-center gap-4">
                   <p className="text-2xl font-semibold mb-3">
                     {currency}
-                    {destinations?.find(p => p._id === item?.destination)?.price * item?.amount || '0'}
+                    {destinations?.find((p) => p._id === item?.destination)?.price *
+                      item?.amount || "0"}
                   </p>
-                  {/* {!item?.isPaid && item?.paymentLink && (
+                  {!item?.isPaid && item?.paymentLink && (
                     <Link
                       to={item.paymentLink}
-                      className='bg-primary px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer'
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-primary px-4 py-1.5 mb-3 text-sm rounded-full font-medium cursor-pointer"
                     >
                       Pay Now
                     </Link>
-                  )} */}
+                  )}
                 </div>
                 <div className="text-sm">
                   <p>

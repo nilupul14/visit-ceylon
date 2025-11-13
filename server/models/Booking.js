@@ -5,9 +5,13 @@ const bookingSchema = new mongoose.Schema(
       bookingId: { type: String, required: true, unique: true },
       user: { type: String, required: true, ref: "User" },
       destination: { type: String, required: true, ref: "Destination" },
+      visit: { type: mongoose.Schema.Types.ObjectId, ref: "Visit" },
       visitDate: { type: Date, required: true },
       visitTime: { type: String, required: true },
       amount: { type: Number, required: true, min: 1 },
+      checkoutSessionId: { type: String },
+      paymentLink: { type: String },
+      isPaid: { type: Boolean, default: false },
   
       userName: { type: String, immutable: true },
       destinationTitle: { type: String, immutable: true }
