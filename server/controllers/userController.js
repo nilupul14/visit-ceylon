@@ -27,7 +27,12 @@ export const updateFavorite = async (req, res)=>{
     try {
         console.log("Request Body:", req.body);
         const { movieId } = req.body;
-        const userId = req.auth().userId;
+        const auth = typeof req.auth === "function" ? req.auth() : req.auth;
+        const userId = auth?.userId;
+
+        if(!userId){
+            return res.status(401).json({ success: false, message: "Authentication required" });
+        }
 
         const user = await clerkClient.users.getUser(userId)
 
@@ -52,7 +57,14 @@ export const updateFavorite = async (req, res)=>{
 
 export const getFavorites = async (req, res) =>{
     try {
-        const user = await clerkClient.users.getUser(req.auth().userId)
+        const auth = typeof req.auth === "function" ? req.auth() : req.auth;
+        const userId = auth?.userId;
+
+        if(!userId){
+            return res.status(401).json({ success: false, message: "Authentication required" });
+        }
+
+        const user = await clerkClient.users.getUser(userId)
         const favorites = user.privateMetadata.favorites;
 
         // Getting movies from database
