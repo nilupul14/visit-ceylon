@@ -98,6 +98,11 @@ export const addDestination = async (req, res) => {
 
     const destination = await Destination.create(payload);
 
+    await inngest.send({
+      name: "app/destination.added",
+      data: { destinationTitle: destination.title, destinationId: destination._id.toString() },
+    });
+
     return res.status(201).json({
       success: true,
       message: "Destination added successfully",
@@ -312,11 +317,6 @@ export const addVisit = async (req, res) => {
     }
 
     await Visit.insertMany(docs);
-
-    await inngest.send({
-      name: "app/visit.added",
-      data: { destinationTitle: destination.title, destinationId },
-    });
 
     return res.json({ success: true, created: docs.length });
   } catch (error) {

@@ -22,17 +22,22 @@ export const stripeWebhooks = async (request, response)=>{
                     payment_intent: paymentIntent.id
                 })
 
-                const session = sessionList.data[0];
-                const { bookingId } = session.metadata;
+                const session = sessionList.data?.[0];
+                const bookingId = session?.metadata?.bookingId;
 
-                await Booking.findByIdAndUpdate(bookingId, {
+                if(!bookingId){
+                    console.warn("Stripe webhook received payment without bookingId metadata");
+                    break;
+                }
+
+                 await Booking.findByIdAndUpdate(bookingId, {
                     isPaid: true,
                     paymentLink: ""
                 })
 
                  // Send Confirmation Email
                  await inngest.send({
-                    name: "app/show.booked",
+                    name: "app/booking.confirmed",
                     data: {bookingId}
                  })
                 
