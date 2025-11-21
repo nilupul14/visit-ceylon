@@ -15,6 +15,24 @@ export const stripeWebhooks = async (request, response)=>{
     }
 
     try {
+        const markPaidAndNotify = async (bookingId)=>{
+            if(!bookingId) {
+                console.warn("Stripe webhook missing bookingId metadata");
+                return;
+            }
+
+            await Booking.findByIdAndUpdate(bookingId, {
+                isPaid: true,
+                paymentLink: ""
+            })
+    
+             // Send Confirmation Email
+             await inngest.send({
+                name: "app/booking.confirmed",
+                data: {bookingId}
+             })
+        }
+
         switch (event.type) {
             case "payment_intent.succeeded": {
                 const paymentIntent = event.data.object;
@@ -25,21 +43,15 @@ export const stripeWebhooks = async (request, response)=>{
                 const session = sessionList.data?.[0];
                 const bookingId = session?.metadata?.bookingId;
 
-                if(!bookingId){
-                    console.warn("Stripe webhook received payment without bookingId metadata");
-                    break;
-                }
+                await markPaidAndNotify(bookingId);
+                
+                break;
+            }
 
-                 await Booking.findByIdAndUpdate(bookingId, {
-                    isPaid: true,
-                    paymentLink: ""
-                })
-
-                 // Send Confirmation Email
-                 await inngest.send({
-                    name: "app/booking.confirmed",
-                    data: {bookingId}
-                 })
+            case "checkout.session.completed": {
+                const session = event.data.object;
+                const bookingId = session?.metadata?.bookingId;
+                await markPaidAndNotify(bookingId);
                 
                 break;
             }
