@@ -5,11 +5,18 @@ import { inngest } from "../inngest/index.js";
 export const stripeWebhooks = async (request, response)=>{
     const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
     const sig = request.headers["stripe-signature"];
+    const payload = request.body;
 
     let event;
 
     try {
-        event = stripeInstance.webhooks.constructEvent(request.body, sig, process.env.STRIPE_WEBHOOK_SECRET)
+        if (!sig) {
+            console.warn("Stripe webhook missing signature header");
+        }
+        if (!Buffer.isBuffer(payload)) {
+            console.warn("Stripe webhook payload is not a Buffer");
+        }
+        event = stripeInstance.webhooks.constructEvent(payload, sig, process.env.STRIPE_WEBHOOK_SECRET)
     } catch (error) {
         return response.status(400).send(`Webhook Error: ${error.message}`);
     }
@@ -18,6 +25,17 @@ export const stripeWebhooks = async (request, response)=>{
         const markPaidAndNotify = async (bookingId)=>{
             if(!bookingId) {
                 console.warn("Stripe webhook missing bookingId metadata");
+                return;
+            }
+
+            const booking = await Booking.findById(bookingId).select("isPaid");
+            if(!booking){
+                console.warn(`Booking ${bookingId} not found`);
+                return;
+            }
+
+            if(booking.isPaid){
+                console.log(`Booking ${bookingId} already marked as paid`);
                 return;
             }
 

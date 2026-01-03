@@ -122,6 +122,10 @@ const BookingForm = ({
       visitId: selectedSlot.visitId,
       amount: Number(amount),
       userName: user.fullName || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
+      userEmail:
+        user?.primaryEmailAddress?.emailAddress ||
+        user?.emailAddresses?.[0]?.emailAddress ||
+        "",
       destinationTitle: destination.title,
     };
 

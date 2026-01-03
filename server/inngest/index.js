@@ -93,7 +93,7 @@ const sendBookingConfirmationEmail = inngest.createFunction(
                 throw new Error(`Booking ${bookingId} not found`);
             }
 
-            const userEmail = booking.user?.email;
+            const userEmail = booking.userEmail || booking.user?.email;
             if(!userEmail){
                 return { skipped: true, message: "Booking has no user email" };
             }
@@ -157,7 +157,7 @@ const sendDestinationReminders = inngest.createFunction(
         const timeZone = "Asia/Colombo";
         const results = await step.run("send-reminder-emails", async ()=>{
             return Promise.allSettled(bookings.map(b => {
-                const to = b.user?.email;
+                const to = b.userEmail || b.user?.email;
                 if(!to) return Promise.resolve({ skipped: true });
 
                 const userName = b.userName || b.user?.name || "Traveler";

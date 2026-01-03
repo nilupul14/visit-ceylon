@@ -4,7 +4,16 @@ import Show from "../models/Show.js";
 import User from "../models/User.js";
 // API to check if user is admin
 export const isAdmin = async (req, res) => {
-  res.json({ success: true, isAdmin: true });
+  const user = req.user;
+  const meta = user?.privateMetadata || {};
+  const roles = meta.roles ?? meta.role ?? [];
+  const normalizedRoles = Array.isArray(roles) ? roles : [roles];
+
+  res.json({
+    success: true,
+    isAdmin: true,
+    roles: normalizedRoles.map((role) => String(role)),
+  });
 };
 
 // API to get dashboard data
@@ -143,4 +152,3 @@ export const addBookings = async (req, res) => {
       .json({ success: false, message: error.message || "Failed to seed bookings." });
   }
 };
-

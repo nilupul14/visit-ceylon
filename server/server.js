@@ -17,8 +17,8 @@ const port = 3000;
 
 await connectDB()
 
-// Stripe Webhooks Route
-app.use('/api/stripe', express.raw({type: 'application/json'}), stripeWebhooks)
+// Stripe Webhooks Route (use raw body for signature verification)
+app.use('/api/stripe', express.raw({ type: '*/*' }), stripeWebhooks)
 
 // Middleware
 app.use(express.json())
@@ -37,4 +37,3 @@ app.use('/api/bookings', bookingRouter)
 
 
 app.listen(port, ()=> console.log(`Server listening at http://localhost:${port}`));
-

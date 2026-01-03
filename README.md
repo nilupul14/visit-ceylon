@@ -36,6 +36,15 @@ visit-ceylon/
 - Background workflows built with Inngest (Clerk user sync, payment timeouts, booking confirmations, recurring reminders, new show notifications).
 - Email and notification plumbing through Brevo SMTP (via Nodemailer) and toast level UX feedback using `react-hot-toast`.
 
+### Roles and access
+
+- `sys_admin`: full superuser access (bypasses other role checks).
+- `admin`: legacy admin role with broad management rights.
+- `business_manager`: can view dashboards and bookings for oversight.
+- `financial_manager`: can view dashboards and bookings for revenue reporting.
+- `site_manager`: can manage destinations/shows (add/remove inventory).
+Set these in Clerk `privateMetadata.roles` (array) or `privateMetadata.role` (string). The API treats both formats the same.
+
 ## Tech stack and third party modules
 
 ### Frontend (client/)
@@ -77,7 +86,7 @@ visit-ceylon/
 
 - Node.js 20.11+ and npm 10+ (required for native fetch, top level await, and Vite 6).
 - MongoDB Atlas database (or locally accessible MongoDB URI).
-- Clerk application (publishable + secret keys, and an admin user with `privateMetadata.role = "admin"`).
+- Clerk application (publishable + secret keys, and at least one privileged user with `privateMetadata.roles` or `privateMetadata.role` set to one of: `sys_admin`, `admin`, `business_manager`, `site_manager`, `financial_manager`).
 - Stripe account with secret key, publishable key, and a webhook secret (Stripe CLI recommended for local testing).
 - Google Maps API key (Maps JS + Geocoding enabled).
 - TMDB API read token.
@@ -215,4 +224,3 @@ The repo does not include automated tests yet. When adding new functionality:
 - Replace sample `.env` credentials with secrets from your vault before deploying.
 - Add integration tests for booking flows and admin actions to prevent regressions.
 - Consider wiring `bookingController`'s Stripe Checkout code path back in if you need full seat level enforcement instead of the simplified booking endpoint.
-

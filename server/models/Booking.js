@@ -14,6 +14,7 @@ const bookingSchema = new mongoose.Schema(
       isPaid: { type: Boolean, default: false },
   
       userName: { type: String, immutable: true },
+      userEmail: { type: String, immutable: true },
       destinationTitle: { type: String, immutable: true }
     },
     { timestamps: true }
@@ -22,17 +23,18 @@ const bookingSchema = new mongoose.Schema(
   // Auto-fill snapshots on create
   bookingSchema.pre('validate', async function (next) {
     try {
-      if ((!this.userName || !this.destinationTitle) && (this.user && this.destination)) {
+      if ((!this.userName || !this.userEmail || !this.destinationTitle) && (this.user && this.destination)) {
         const User = mongoose.model('User');
         const Destination = mongoose.model('Destination');
   
         // fetch only what you need
         const [u, d] = await Promise.all([
-          User.findById(this.user).select('name').lean(),
+          User.findById(this.user).select('name email').lean(),
           Destination.findById(this.destination).select('title').lean(),
         ]);
   
         if (!this.userName && u?.name) this.userName = u.name;
+        if (!this.userEmail && u?.email) this.userEmail = u.email;
         if (!this.destinationTitle && d?.title) this.destinationTitle = d.title;
       }
       next();

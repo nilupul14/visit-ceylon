@@ -36,6 +36,7 @@ export const addBooking = async (req, res) => {
       amount,
       // Optional snapshots; your pre-hook will fill these if omitted:
       userName,
+      userEmail,
       destinationTitle,
     } = req.body || {};
 
@@ -127,6 +128,7 @@ export const addBooking = async (req, res) => {
     if (visitRefId) doc.visit = visitRefId;
     // Allow passing snapshots explicitly, otherwise pre-hook fills them
     if (userName) doc.userName = String(userName);
+    if (userEmail) doc.userEmail = String(userEmail);
     if (destinationTitle) doc.destinationTitle = String(destinationTitle);
 
     const created = await Booking.create(doc);
