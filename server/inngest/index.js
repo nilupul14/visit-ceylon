@@ -1,7 +1,7 @@
 import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
-import sendEmail from "../configs/nodeMailer.js";
+import sendEmail, { buildBookingConfirmationEmail } from "../configs/nodeMailer.js";
 
 // Create a client to send and receive events
 // export const inngest = new Inngest({ id: "movie-ticket-booking" });
@@ -112,20 +112,22 @@ const sendBookingConfirmationEmail = inngest.createFunction(
 
             const formattedTime = booking.visitTime || "Time not available";
 
+            const amountLabel = booking.amount
+              ? `LKR ${Number(booking.amount).toLocaleString()}`
+              : "N/A";
+
             await sendEmail({
                 to: userEmail,
                 subject: `Booking confirmed: ${destinationTitle}`,
-                body: `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111;">
-                        <h2 style="margin-bottom: 8px;">Hi ${userName},</h2>
-                        <p style="margin: 0 0 12px;">Great news! Your VisitCeylon booking is confirmed.</p>
-                        <p style="margin: 0 0 12px;"><strong style="color: #F84565;">${destinationTitle}</strong></p>
-                        <p style="margin: 0 0 12px;">
-                            <strong>Date:</strong> ${formattedDate}<br/>
-                            <strong>Time:</strong> ${formattedTime}
-                        </p>
-                        <p style="margin: 0 0 12px;">We look forward to hosting you.</p>
-                        <p style="margin: 0;">Thanks for choosing us,<br/>VisitCeylon Team</p>
-                    </div>`
+                body: buildBookingConfirmationEmail({
+                  userName,
+                  destinationTitle,
+                  bookingId: booking.bookingId || booking._id?.toString(),
+                  email: userEmail,
+                  visitDate: formattedDate,
+                  visitTime: formattedTime,
+                  amount: amountLabel
+                })
             })
 
             return { sent: true, to: userEmail };

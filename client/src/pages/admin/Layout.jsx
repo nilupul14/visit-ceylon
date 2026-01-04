@@ -1,16 +1,35 @@
 import React, { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 import Loading from "../../components/Loading";
 import AdminNavbar from "../../components/admin/AdminNavbar";
 import AdminSidebar from "../../components/admin/AdminSidebar";
+import {
+  canAccessAdminPath,
+  getDefaultAdminPath
+} from "../../lib/adminRoles";
 
 const Layout = () => {
-  const { isAdmin, fetchIsAdmin } = useAppContext();
+  const { isAdmin, fetchIsAdmin, roles, rolesLoaded } = useAppContext();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchIsAdmin();
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin || !rolesLoaded) return;
+
+    if (!canAccessAdminPath(roles, location.pathname)) {
+      const fallbackPath = getDefaultAdminPath(roles);
+      navigate(fallbackPath, { replace: true });
+    }
+  }, [isAdmin, roles, location.pathname, navigate]);
+
+  if (!rolesLoaded) {
+    return <Loading />;
+  }
 
   return isAdmin ? (
     <>

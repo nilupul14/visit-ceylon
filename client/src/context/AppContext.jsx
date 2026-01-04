@@ -3,6 +3,7 @@ import axios from "axios";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { normalizeRoles } from "../lib/adminRoles";
 
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL
 
@@ -16,6 +17,8 @@ export const AppProvider = ({ children })=>{
     // const [bookings, setBookings] = useState([])
     const [bookingsApi, setBookingsApi] = useState([])
     const [favoriteMovies, setFavoriteMovies] = useState([])
+    const [roles, setRoles] = useState([])
+    const [rolesLoaded, setRolesLoaded] = useState(false)
 
     const image_base_url = import.meta.env.VITE_TMDB_IMAGE_BASE_URL;
 
@@ -29,15 +32,24 @@ export const AppProvider = ({ children })=>{
             const {data} = await axios.get('/api/admin/is-admin', {headers: {Authorization: `Bearer ${await getToken()}`}})
 
             console.log('data: ADMIN', data)
-            // setIsAdmin(data.isAdmin)
-            setIsAdmin(true)
+            const normalizedRoles = normalizeRoles(data?.roles || [])
+            setRoles(normalizedRoles)
+            setIsAdmin(Boolean(data?.isAdmin))
+            setRolesLoaded(true)
 
-            if(data.isAdmin && location.pathname.startsWith('/admin')){
-                navigate('/admin')
+            if(!data?.isAdmin && location.pathname.startsWith('/admin')){
+                navigate('/')
                 toast.error('You are not authorized to access admin dashboard')
             }
         } catch (error) {
             console.error(error)
+            setIsAdmin(false)
+            setRoles([])
+            setRolesLoaded(true)
+            if(location.pathname.startsWith('/admin')){
+                navigate('/')
+                toast.error('You are not authorized to access admin dashboard')
+            }
         }
     }
 
@@ -112,7 +124,7 @@ export const AppProvider = ({ children })=>{
         axios,
         fetchIsAdmin,
         fetchShows,
-        user, getToken, navigate, isAdmin, shows, destinations, bookingsApi,
+        user, getToken, navigate, isAdmin, roles, rolesLoaded, shows, destinations, bookingsApi,
         favoriteMovies, fetchFavoriteMovies, image_base_url, fetchBookings
     }
 

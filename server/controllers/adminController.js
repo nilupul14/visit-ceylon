@@ -9,6 +9,11 @@ export const isAdmin = async (req, res) => {
   const roles = meta.roles ?? meta.role ?? [];
   const normalizedRoles = Array.isArray(roles) ? roles : [roles];
 
+  console.log('normalizedRoles - ',normalizedRoles);
+  console.log('roles', roles);
+  console.log('meta', meta);
+  console.log('user', user);
+
   res.json({
     success: true,
     isAdmin: true,

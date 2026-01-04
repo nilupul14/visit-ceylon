@@ -36,7 +36,7 @@ export const updateFavorite = async (req, res)=>{
 
         const user = await clerkClient.users.getUser(userId)
 
-        if(!user.privateMetadata.favorites){
+        if(!Array.isArray(user.privateMetadata.favorites)){
             user.privateMetadata.favorites = []
         }
 
@@ -65,10 +65,14 @@ export const getFavorites = async (req, res) =>{
         }
 
         const user = await clerkClient.users.getUser(userId)
-        const favorites = user.privateMetadata.favorites;
+        const favorites = Array.isArray(user.privateMetadata.favorites)
+          ? user.privateMetadata.favorites
+          : [];
 
         // Getting movies from database
-        const destinations = await Destination.find({_id: {$in: favorites}})
+        const destinations = favorites.length
+          ? await Destination.find({_id: {$in: favorites}})
+          : [];
 
         console.log('destinations', destinations)
 
