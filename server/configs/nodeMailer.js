@@ -132,6 +132,26 @@ export const buildBookingConfirmationEmail = async ({
         </div>
       </div>
 
+      <div style="padding:0 32px 26px 32px;">
+        <div style="padding:16px 18px;border:1px solid #e2e8f0;border-radius:12px;background:#ffffff;">
+          <p style="margin:0 0 10px 0;font-size:14px;color:#0f172a;font-weight:600;">Hi ${userName},</p>
+          <p style="margin:0 0 10px 0;font-size:13px;color:#475569;">
+            Thank you for choosing Visit Ceylon! Your ticket has been successfully booked, and we're excited to welcome you.
+          </p>
+          <p style="margin:0 0 10px 0;font-size:13px;color:#475569;">
+            Attached below are your booking details, including ticket information, date, time, and payment summary.
+          </p>
+          <p style="margin:0 0 10px 0;font-size:13px;color:#475569;">
+            Please keep this email for reference and show the ticket (or QR code) at the entrance on the day of your visit.
+          </p>
+          <p style="margin:0 0 10px 0;font-size:13px;color:#475569;">
+            If you have any questions or need support, feel free to reach us at
+            <a href="mailto:support@visitceylon.com" style="color:#009454;text-decoration:none;"> support@visitceylon.com</a>.
+          </p>
+          <p style="margin:0;font-size:13px;color:#0f766e;font-weight:600;">We’re here to help!</p>
+        </div>
+      </div>
+
       <div style="padding:18px 32px 28px 32px;border-top:1px solid #e2e8f0;background:#f8fafc;">
         <p style="margin:0;font-size:12px;color:#64748b;">We hope you enjoy discovering Sri Lanka with Visit Ceylon.</p>
       </div>
