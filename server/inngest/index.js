@@ -116,17 +116,21 @@ const sendBookingConfirmationEmail = inngest.createFunction(
               ? `LKR ${Number(booking.amount).toLocaleString()}`
               : "N/A";
 
+            const defaultLogoUrl =
+              "https://res.cloudinary.com/dirqkqwps/image/upload/v1767511889/visitCeylonLogo_fdlawx.png";
+
             await sendEmail({
                 to: userEmail,
                 subject: `Booking confirmed: ${destinationTitle}`,
-                body: buildBookingConfirmationEmail({
+                body: await buildBookingConfirmationEmail({
                   userName,
                   destinationTitle,
                   bookingId: booking.bookingId || booking._id?.toString(),
                   email: userEmail,
                   visitDate: formattedDate,
                   visitTime: formattedTime,
-                  amount: amountLabel
+                  amount: amountLabel,
+                  logoUrl: process.env.EMAIL_LOGO_URL || defaultLogoUrl
                 })
             })
 

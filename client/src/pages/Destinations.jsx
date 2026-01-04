@@ -26,19 +26,31 @@ const Destinations = () => {
   }
 
   return (
-    <div className="relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]">
-      <BlurCircle top="150px" left="0px" />
-      <BlurCircle bottom="50px" right="50px" />
+    <div className="relative min-h-screen bg-[#060b0f] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,116,144,0.18),_transparent_55%),radial-gradient(circle_at_20%_30%,_rgba(16,185,129,0.12),_transparent_45%),radial-gradient(circle_at_90%_25%,_rgba(15,118,110,0.18),_transparent_45%)]" />
+      <BlurCircle top="140px" left="0px" />
+      <BlurCircle bottom="40px" right="40px" />
 
-      <h1 className="text-lg font-medium my-4">Destinations</h1>
+      <div className="relative mx-auto max-w-6xl px-6 pb-28 pt-28 md:px-12 lg:px-16">
+        <p className="text-xs uppercase tracking-[0.35em] text-emerald-200/70">
+          Visit Ceylon
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold md:text-4xl">
+          Destinations
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-slate-300/80">
+          Explore curated heritage sites, coastal escapes, and cultural
+          experiences crafted for unforgettable journeys.
+        </p>
 
-      <div className="flex flex-wrap max-sm:justify-center gap-8">
-        {availableDestinations.map((destination) => (
-          <DestinationCard
-            key={destination._id || destination.id}
-            destination={destination}
-          />
-        ))}
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {availableDestinations.map((destination) => (
+            <DestinationCard
+              key={destination._id || destination.id}
+              destination={destination}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
