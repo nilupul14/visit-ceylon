@@ -16,14 +16,20 @@ const transporter = nodemailer.createTransport({
 
 const buildQrDataUri = async (qrText = "") => {
   const safeText = qrText || "visitceylon-booking";
-  return QRCode.toDataURL(safeText, {
-    width: 220,
-    margin: 1,
-    color: {
-      dark: "#111827",
-      light: "#ffffff"
-    }
-  });
+  try {
+    return await QRCode.toDataURL(safeText, {
+      errorCorrectionLevel: "M",
+      width: 180,
+      margin: 1,
+      color: {
+        dark: "#0f172a",
+        light: "#ffffff"
+      }
+    });
+  } catch (error) {
+    console.error("QR code generation failed:", error.message);
+    return "";
+  }
 };
 
 const resolveLogoSrc = async (logoUrl = "") => {
@@ -77,7 +83,7 @@ export const buildBookingConfirmationEmail = async ({
     : `<span style="font-size:16px;font-weight:700;color:#0f172a;letter-spacing:0.6px;">Visit Ceylon</span>`;
 
   return `
-  <div style="margin:0;padding:32px;background:#eaf0f5;">
+  <div style="margin:0;padding:32px;background:#e9f2f2;">
     <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;color:#0f172a;">
       <div style="padding:24px 32px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
         ${headerLogo}
@@ -88,14 +94,15 @@ export const buildBookingConfirmationEmail = async ({
       <div style="padding:26px 32px 8px 32px;">
         <h2 style="margin:0;font-size:20px;font-weight:700;color:#111827;">${destinationTitle}</h2>
         <p style="margin:6px 0 0 0;font-size:13px;color:#64748b;">Keep this email handy to enter the experience.</p>
+        <p style="margin:10px 0 0 0;font-size:13px;color:#0f766e;font-weight:600;">Enjoy your adventure with Visit Ceylon.</p>
       </div>
 
       <div style="padding:18px 32px 28px 32px;display:block;">
         <table role="presentation" style="width:100%;border-collapse:collapse;">
           <tr>
             <td style="vertical-align:top;width:58%;">
-              <div style="padding:14px 16px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;">
-                <p style="margin:0 0 10px 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#64748b;">Ticket Details</p>
+              <div style="padding:14px 16px;border:1px solid #d1f2f3;border-radius:14px;background:#e7fbfb;">
+                <p style="margin:0 0 10px 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#008a8f;">Ticket Details</p>
                 <p style="margin:0 0 6px 0;font-size:14px;"><strong>Booking ID:</strong> ${bookingId}</p>
                 <p style="margin:0 0 6px 0;font-size:14px;"><strong>Email:</strong> ${email}</p>
                 <p style="margin:0 0 6px 0;font-size:14px;"><strong>Date:</strong> ${visitDate}</p>
@@ -104,9 +111,13 @@ export const buildBookingConfirmationEmail = async ({
               </div>
             </td>
             <td style="vertical-align:top;width:42%;text-align:center;">
-              <div style="margin:0 auto;padding:16px;border:1px solid #e2e8f0;border-radius:14px;background:#ffffff;display:inline-block;">
-                <img src="${qrCodeSrc}" alt="QR code" width="160" height="160" style="display:block;border:0;" />
-                <p style="margin:10px 0 0 0;font-size:12px;color:#64748b;">Scan at entry</p>
+              <div style="margin:0 auto;padding:16px;border:1px solid #d1f2f3;border-radius:14px;background:#ffffff;display:inline-block;">
+                ${
+                  qrCodeSrc
+                    ? `<img src="${qrCodeSrc}" alt="QR code" width="160" height="160" style="display:block;border:0;" />`
+                    : `<div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;border:1px dashed #94a3b8;border-radius:12px;color:#64748b;font-size:12px;">QR code unavailable</div>`
+                }
+                <p style="margin:10px 0 0 0;font-size:12px;color:#0f766e;">Scan at entry</p>
               </div>
             </td>
           </tr>
@@ -114,10 +125,10 @@ export const buildBookingConfirmationEmail = async ({
       </div>
 
       <div style="padding:0 32px 28px 32px;">
-        <div style="padding:14px 16px;border:1px dashed #cbd5f5;border-radius:12px;background:#f1f5f9;">
-          <p style="margin:0 0 6px 0;font-size:13px;color:#475569;">Please arrive at least 15 minutes early.</p>
-          <p style="margin:0 0 6px 0;font-size:13px;color:#475569;">Show this email or your QR code at the entrance.</p>
-          <p style="margin:0;font-size:13px;color:#475569;">Need help? Contact us at <a href="mailto:support@visitceylon.com" style="color:#0f172a;text-decoration:none;">support@visitceylon.com</a>.</p>
+        <div style="padding:14px 16px;border:1px dashed #00a6ac;border-radius:12px;background:linear-gradient(120deg, rgba(0,166,172,0.12), rgba(0,148,84,0.08));">
+          <p style="margin:0 0 6px 0;font-size:13px;color:#0f172a;">Please arrive at least 15 minutes early.</p>
+          <p style="margin:0 0 6px 0;font-size:13px;color:#0f172a;">Show this email or your QR code at the entrance.</p>
+          <p style="margin:0;font-size:13px;color:#0f172a;">Need help? Contact us at <a href="mailto:support@visitceylon.com" style="color:#009454;text-decoration:none;">support@visitceylon.com</a>.</p>
         </div>
       </div>
 
