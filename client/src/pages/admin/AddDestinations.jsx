@@ -13,6 +13,13 @@ const normalizeCategoryValues = (value) => {
     .filter(Boolean);
 };
 
+const normalizeNearestPlaceValues = (value) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === "string" ? item : item?.name))
+    .filter(Boolean);
+};
+
 const AddDestinations = () => {
   const { axios, getToken, image_base_url, destinations, fetchShows } =
     useAppContext();
@@ -23,6 +30,8 @@ const AddDestinations = () => {
   const [dateAndTime, setDateAndTime] = useState("");
   const [categories, setCategories] = useState([]);
   const [categoryInput, setCategoryInput] = useState("");
+  const [nearestPlaces, setNearestPlaces] = useState([]);
+  const [nearestPlaceInput, setNearestPlaceInput] = useState("");
   const [image, setImage] = useState("");
   const [price, setPrice] = useState("");
   const [addingDestination, setAddingDestination] = useState(false);
@@ -49,12 +58,25 @@ const AddDestinations = () => {
     setCategories((prev) => prev.filter((item) => item !== value));
   };
 
+  const handleNearestPlaceAdd = () => {
+    const value = nearestPlaceInput.trim();
+    if (!value || nearestPlaces.includes(value)) return;
+    setNearestPlaces((prev) => [...prev, value]);
+    setNearestPlaceInput("");
+  };
+
+  const handleNearestPlaceRemove = (value) => {
+    setNearestPlaces((prev) => prev.filter((item) => item !== value));
+  };
+
   const clearFormFields = () => {
     setTitle("");
     setDescription("");
     setDateAndTime("");
     setCategories([]);
     setCategoryInput("");
+    setNearestPlaces([]);
+    setNearestPlaceInput("");
     setImage("");
     setPrice("");
   };
@@ -76,6 +98,12 @@ const AddDestinations = () => {
     );
     setCategories(normalizeCategoryValues(destination.category));
     setCategoryInput("");
+    setNearestPlaces(
+      normalizeNearestPlaceValues(
+        destination.nearestPlaces || destination.nearbyPlaces
+      )
+    );
+    setNearestPlaceInput("");
     setImage(destination.poster_path || destination.image || "");
     setPrice(
       destination.price != null ? String(destination.price) : ""
@@ -92,6 +120,11 @@ const AddDestinations = () => {
   const handleSubmit = async () => {
     try {
       setAddingDestination(true);
+
+      const pendingNearestPlace = nearestPlaceInput.trim();
+      const nearestPlacesPayload = pendingNearestPlace
+        ? Array.from(new Set([...nearestPlaces, pendingNearestPlace]))
+        : nearestPlaces;
 
       if (
         !title.trim() ||
@@ -118,7 +151,8 @@ const AddDestinations = () => {
         dateAndTime: dateAndTime.trim(),
         image: image.trim(),
         poster_path: image.trim(),
-        categories
+        categories,
+        nearestPlaces: nearestPlacesPayload
       };
 
       if (isEditing) {
@@ -317,6 +351,53 @@ const AddDestinations = () => {
                     width={14}
                     className="text-red-500 cursor-pointer hover:text-red-700"
                     onClick={() => handleCategoryRemove(category)}
+                  />
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-sm font-medium mb-2">
+            Nearest Places
+          </label>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex flex-1 min-w-[240px] items-center gap-2 border border-gray-600 px-3 py-2 rounded-md">
+              <input
+                type="text"
+                value={nearestPlaceInput}
+                onChange={(e) => setNearestPlaceInput(e.target.value)}
+                onBlur={handleNearestPlaceAdd}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleNearestPlaceAdd();
+                  }
+                }}
+                placeholder="Add nearby place and press Enter"
+                className="flex-1 bg-transparent outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleNearestPlaceAdd}
+                className="text-sm bg-primary text-white px-3 py-1 rounded-md hover:bg-primary/90 transition-colors cursor-pointer"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+          {nearestPlaces.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {nearestPlaces.map((place) => (
+                <span
+                  key={place}
+                  className="inline-flex items-center gap-1 border border-primary px-3 py-1 rounded-full text-sm"
+                >
+                  {place}
+                  <DeleteIcon
+                    width={14}
+                    className="text-red-500 cursor-pointer hover:text-red-700"
+                    onClick={() => handleNearestPlaceRemove(place)}
                   />
                 </span>
               ))}

@@ -156,6 +156,13 @@ const DestinationDetails = () => {
       .map((item) => (typeof item === "string" ? item : item?.name))
       .filter(Boolean)
   : [];
+  const nearestPlaceList = Array.isArray(
+    destination.nearestPlaces || destination.nearbyPlaces
+  )
+    ? (destination.nearestPlaces || destination.nearbyPlaces)
+        .map((item) => (typeof item === "string" ? item : item?.name))
+        .filter(Boolean)
+    : [];
 
   const openMap = () => {
     const query = encodeURIComponent(destination.title + " Sri Lanka");
@@ -215,6 +222,22 @@ const DestinationDetails = () => {
             <HandCoinsIcon className="w-5 h-5 text-primary" />
             Price : ${destination?.price}
           </div>
+
+          {nearestPlaceList.length > 0 && (
+            <div className="mt-2">
+              <p className="text-sm text-white/80 mb-2">Nearby Places</p>
+              <div className="flex flex-wrap gap-2">
+                {nearestPlaceList.map((place) => (
+                  <span
+                    key={place}
+                    className="rounded-full border border-primary/50 bg-primary/10 px-3 py-1 text-xs text-white/85"
+                  >
+                    {place}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center flex-wrap gap-4 mt-4">
             <button

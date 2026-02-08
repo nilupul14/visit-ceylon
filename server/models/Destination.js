@@ -13,6 +13,24 @@ const normalizeCategories = (value) => {
     .filter(Boolean);
 };
 
+const normalizeNearestPlaces = (value) => {
+  if (!Array.isArray(value)) return [];
+  const unique = new Set();
+
+  value.forEach((item) => {
+    const place =
+      typeof item === "string"
+        ? item.trim()
+        : item && typeof item === "object" && typeof item.name === "string"
+          ? item.name.trim()
+          : "";
+
+    if (place) unique.add(place);
+  });
+
+  return Array.from(unique);
+};
+
 const destinationSchema = new mongoose.Schema(
   {
     _id: {
@@ -28,6 +46,12 @@ const destinationSchema = new mongoose.Schema(
       default: [],
       set: normalizeCategories,
       get: normalizeCategories,
+    },
+    nearestPlaces: {
+      type: [String],
+      default: [],
+      set: normalizeNearestPlaces,
+      get: normalizeNearestPlaces,
     },
     price: { type: Number, required: true, min: 0 },
     vote_average: { type: Number, default: 5 },

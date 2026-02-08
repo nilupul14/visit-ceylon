@@ -29,7 +29,7 @@ const BookingForm = ({
 
   const [bookingId, setBookingId] = useState(generateBookingId);
   const [selectedSlotValue, setSelectedSlotValue] = useState("");
-  const [amount, setAmount] = useState(1);
+  const [amount, setAmount] = useState("1");
   const [submitting, setSubmitting] = useState(false);
 
   const availableDates = useMemo(() => Object.keys(availability || {}).sort(), [availability]);
@@ -114,13 +114,15 @@ const BookingForm = ({
       return;
     }
 
+    const ticketCount = Number(amount);
+
     const payload = {
       bookingId,
       destination: destination._id,
       visitDate: formatDateInput(selectedDate),
       visitTime: selectedSlot.value,
       visitId: selectedSlot.visitId,
-      amount: Number(amount),
+      amount: ticketCount,
       userName: user.fullName || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
       userEmail:
         user?.primaryEmailAddress?.emailAddress ||
@@ -151,7 +153,7 @@ const BookingForm = ({
         }
         toast.success("Booking created successfully.");
         setBookingId(generateBookingId());
-        setAmount(1);
+        setAmount("1");
         onResetSelectedDate?.();
         fetchBookings?.();
       } else {
@@ -258,8 +260,7 @@ const BookingForm = ({
               min={1}
               value={amount}
               onChange={(event) => {
-                const next = Number(event.target.value);
-                setAmount(Number.isNaN(next) ? 1 : Math.max(1, next));
+                setAmount(event.target.value);
               }}
               disabled={!isFormEnabled}
               className="mt-1 rounded-lg border border-primary/25 bg-black/20 px-3 py-2 text-sm text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/40"

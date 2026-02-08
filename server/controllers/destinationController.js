@@ -21,6 +21,24 @@ const normalizeCategoryInput = (input) => {
     .filter(Boolean);
 };
 
+const normalizeNearestPlacesInput = (input) => {
+  if (!Array.isArray(input)) return [];
+  const unique = new Set();
+
+  input.forEach((item) => {
+    const place =
+      typeof item === "string"
+        ? item.trim()
+        : item && typeof item === "object" && typeof item.name === "string"
+          ? item.name.trim()
+          : "";
+
+    if (place) unique.add(place);
+  });
+
+  return Array.from(unique);
+};
+
 const buildDestinationFilter = (identifier) => {
   if (!identifier) return null;
   const clauses = [];
@@ -51,6 +69,8 @@ export const addDestination = async (req, res) => {
       poster_path: posterPathFromBody,
       categories,
       category,
+      nearestPlaces,
+      nearbyPlaces,
       price,
       vote_average,
       vote_count,
@@ -70,6 +90,9 @@ export const addDestination = async (req, res) => {
     }
 
     const categoryList = normalizeCategoryInput(categories ?? category);
+    const nearestPlacesList = normalizeNearestPlacesInput(
+      nearestPlaces ?? nearbyPlaces
+    );
     const posterPath = (posterPathFromBody || image).trim();
     const parsedPrice = Number(price);
 
@@ -86,6 +109,7 @@ export const addDestination = async (req, res) => {
       dateAndTime: dateAndTime.trim(),
       poster_path: posterPath,
       category: categoryList,
+      nearestPlaces: nearestPlacesList,
       price: parsedPrice,
     };
 
@@ -131,6 +155,8 @@ export const updateDestination = async (req, res) => {
       poster_path: posterPathFromBody,
       categories,
       category,
+      nearestPlaces,
+      nearbyPlaces,
       price,
       vote_average,
       vote_count,
@@ -155,6 +181,9 @@ export const updateDestination = async (req, res) => {
     }
 
     const categoryList = normalizeCategoryInput(categories ?? category);
+    const nearestPlacesList = normalizeNearestPlacesInput(
+      nearestPlaces ?? nearbyPlaces
+    );
     const posterPath = (posterPathFromBody || image).trim();
     const parsedPrice = Number(price);
 
@@ -171,6 +200,7 @@ export const updateDestination = async (req, res) => {
       dateAndTime: dateAndTime.trim(),
       poster_path: posterPath,
       category: categoryList,
+      nearestPlaces: nearestPlacesList,
       price: parsedPrice,
     };
 
@@ -208,6 +238,7 @@ export const getDestinations = async (_req, res) => {
       category: 1,
       description: 1,
       dateAndTime: 1,
+      nearestPlaces: 1,
       price: 1,
       vote_average: 1,
       vote_count: 1,
@@ -218,6 +249,7 @@ export const getDestinations = async (_req, res) => {
     const destinations = destinationsDocs.map((doc) => ({
       ...doc,
       category: normalizeCategoryInput(doc?.category ?? []),
+      nearestPlaces: normalizeNearestPlacesInput(doc?.nearestPlaces ?? []),
     }));
 
     return res.json({ success: true, destinations });
@@ -245,6 +277,9 @@ export const getDestination = async (req, res) => {
     const destination = {
       ...destinationDoc,
       category: normalizeCategoryInput(destinationDoc?.category ?? []),
+      nearestPlaces: normalizeNearestPlacesInput(
+        destinationDoc?.nearestPlaces ?? []
+      ),
     };
     return res.json({ success: true, destination });
   } catch (error) {
