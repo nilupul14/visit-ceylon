@@ -5,19 +5,35 @@ import {
   StarIcon,
   UsersIcon
 } from "lucide-react";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import Title from "../../components/admin/Title";
 import BlurCircle from "../../components/BlurCircle";
 import { useAppContext } from "../../context/AppContext";
 
 const Dashboard = () => {
-  const { bookingsApi = [], destinations = [], image_base_url } = useAppContext();
+  const {
+    bookingsApi = [],
+    adminBookings = [],
+    fetchAdminBookings,
+    destinations = [],
+    image_base_url,
+    isAdmin
+  } = useAppContext();
   const currency = import.meta.env.VITE_CURRENCY;
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAdminBookings?.();
+    }
+  }, [isAdmin, fetchAdminBookings]);
+
+  const bookings =
+    isAdmin && adminBookings.length > 0 ? adminBookings : bookingsApi;
 
   const statsByDestination = useMemo(() => {
     const map = new Map();
 
-    bookingsApi.forEach((booking) => {
+    bookings.forEach((booking) => {
       const destinationId =
         booking.destination ||
         booking.destinationId ||
@@ -39,16 +55,16 @@ const Dashboard = () => {
     });
 
     return map;
-  }, [bookingsApi]);
+  }, [bookings]);
 
   const totals = useMemo(() => {
-    const totalBookings = bookingsApi.length;
-    const totalRevenue = bookingsApi.reduce(
+    const totalBookings = bookings.length;
+    const totalRevenue = bookings.reduce(
       (sum, booking) => sum + (Number(booking.amount) || 0),
       0
     );
     const travelerIds = new Set(
-      bookingsApi
+      bookings
         .map((booking) => booking.user || booking.userId || booking.userName)
         .filter(Boolean)
     );
@@ -59,7 +75,7 @@ const Dashboard = () => {
       activeDestinations: destinations.length,
       totalUsers: travelerIds.size,
     };
-  }, [bookingsApi, destinations]);
+  }, [bookings, destinations]);
 
   const topDestinations = useMemo(() => {
     return destinations

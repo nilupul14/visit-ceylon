@@ -16,6 +16,7 @@ export const AppProvider = ({ children })=>{
     const [destinations, setDestinations] = useState([])
     // const [bookings, setBookings] = useState([])
     const [bookingsApi, setBookingsApi] = useState([])
+    const [adminBookings, setAdminBookings] = useState([])
     const [favoriteMovies, setFavoriteMovies] = useState([])
     const [roles, setRoles] = useState([])
     const [rolesLoaded, setRolesLoaded] = useState(false)
@@ -70,7 +71,9 @@ export const AppProvider = ({ children })=>{
     
     const fetchBookings = async ()=>{
         try {
-            const { data } = await axios.get('/api/bookings')
+            const { data } = await axios.get('/api/bookings', {
+                params: { limit: 1000 }
+            })
             console.log('bookings data:', data)
             if(data.success){
                 setBookingsApi(data.bookings || [])
@@ -81,6 +84,28 @@ export const AppProvider = ({ children })=>{
             console.error(error)
         }
     }
+
+    const fetchAdminBookings = useCallback(async ()=>{
+        try {
+            const token = getToken ? await getToken() : null;
+            if(!token){
+                setAdminBookings([])
+                return;
+            }
+
+            const { data } = await axios.get('/api/admin/all-bookings', {
+                headers: {Authorization: `Bearer ${token}`}
+            })
+
+            if(data?.success){
+                setAdminBookings(data.bookings || [])
+            }else{
+                toast.error(data?.message || "Unable to load admin bookings")
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }, [getToken])
 
     const fetchFavoriteMovies = useCallback(async ()=>{
         try {
@@ -125,6 +150,7 @@ export const AppProvider = ({ children })=>{
         fetchIsAdmin,
         fetchShows,
         user, getToken, navigate, isAdmin, roles, rolesLoaded, shows, destinations, bookingsApi,
+        adminBookings, fetchAdminBookings,
         favoriteMovies, fetchFavoriteMovies, image_base_url, fetchBookings
     }
 

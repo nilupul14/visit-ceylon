@@ -14,6 +14,9 @@ const ListDestinations = () => {
     user,
     destinations,
     bookingsApi,
+    adminBookings,
+    fetchAdminBookings,
+    isAdmin,
     fetchShows
   } = useAppContext();
 
@@ -40,10 +43,19 @@ const ListDestinations = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAdminBookings?.();
+    }
+  }, [isAdmin, fetchAdminBookings]);
+
+  const bookings =
+    isAdmin && adminBookings.length > 0 ? adminBookings : bookingsApi;
+
   const statsByDestination = useMemo(() => {
     const map = new Map();
 
-    bookingsApi.forEach((booking) => {
+    bookings.forEach((booking) => {
       const destinationId =
         booking.destination ||
         booking.destinationId ||
@@ -65,7 +77,7 @@ const ListDestinations = () => {
     });
 
     return map;
-  }, [bookingsApi]);
+  }, [bookings]);
 
   const nextVisitsByDestination = useMemo(() => {
     const map = new Map();
@@ -88,9 +100,9 @@ const ListDestinations = () => {
     return map;
   }, [destinations]);
 
-  const totalBookings = bookingsApi.length;
+  const totalBookings = bookings.length;
 
-  const totalRevenue = bookingsApi.reduce(
+  const totalRevenue = bookings.reduce(
     (sum, booking) => sum + (Number(booking.amount) || 0),
     0
   );

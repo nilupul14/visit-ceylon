@@ -6,7 +6,11 @@ const adminRouter = express.Router();
 
 const businessAccess = authorizeRoles([ROLE.ADMIN, ROLE.BUSINESS_MANAGER, ROLE.FINANCIAL_MANAGER]);
 const siteOpsAccess = authorizeRoles([ROLE.ADMIN, ROLE.SITE_MANAGER]);
-const bookingsAccess = authorizeRoles([ROLE.ADMIN, ROLE.BUSINESS_MANAGER, ROLE.FINANCIAL_MANAGER]);
+const bookingsAccess = authorizeRoles([
+  ROLE.ADMIN,
+  ROLE.BUSINESS_MANAGER,
+  ROLE.FINANCIAL_MANAGER,
+]);
 const privilegedAccess = authorizeRoles([ROLE.ADMIN, ROLE.BUSINESS_MANAGER, ROLE.FINANCIAL_MANAGER, ROLE.SITE_MANAGER]);
 
 adminRouter.get("/is-admin", privilegedAccess, isAdmin);
