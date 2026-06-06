@@ -14,21 +14,35 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const buildQrDataUri = async (qrText = "") => {
+const buildQrAttachment = async (qrText = "", bookingId = "booking") => {
   const safeText = qrText || "visitceylon-booking";
   try {
-    return await QRCode.toDataURL(safeText, {
-      errorCorrectionLevel: "M",
-      width: 180,
-      margin: 1,
+    const content = await QRCode.toBuffer(safeText, {
+      type: "png",
+      errorCorrectionLevel: "H",
+      width: 512,
+      margin: 4,
       color: {
         dark: "#0f172a",
         light: "#ffffff"
       }
     });
+
+    const safeBookingId = String(bookingId || "booking").replace(/[^a-z0-9_-]/gi, "");
+    const cid = `visit-ceylon-qr-${safeBookingId || "booking"}@visitceylon`;
+
+    return {
+      cid,
+      attachment: {
+        filename: "visit-ceylon-booking-qr.png",
+        content,
+        contentType: "image/png",
+        cid
+      }
+    };
   } catch (error) {
     console.error("QR code generation failed:", error.message);
-    return "";
+    return null;
   }
 };
 
@@ -76,13 +90,14 @@ export const buildBookingConfirmationEmail = async ({
     visitTime,
     destinationTitle
   });
-  const qrCodeSrc = await buildQrDataUri(qrPayload);
+  const qrImage = await buildQrAttachment(qrPayload, bookingId);
+  const qrCodeSrc = qrImage ? `cid:${qrImage.cid}` : "";
   const resolvedLogo = await resolveLogoSrc(logoUrl);
   const headerLogo = resolvedLogo
     ? `<img src="${resolvedLogo}" alt="Visit Ceylon" width="120" style="display:block;border:0;" />`
     : `<span style="font-size:16px;font-weight:700;color:#0f172a;letter-spacing:0.6px;">Visit Ceylon</span>`;
 
-  return `
+  const html = `
   <div style="margin:0;padding:32px;background:#e9f2f2;">
     <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;font-family:'Trebuchet MS','Segoe UI',Arial,sans-serif;color:#0f172a;">
       <div style="padding:24px 32px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
@@ -158,14 +173,20 @@ export const buildBookingConfirmationEmail = async ({
     </div>
   </div>
   `;
+
+  return {
+    html,
+    attachments: qrImage ? [qrImage.attachment] : []
+  };
 };
 
-const sendEmail = async ({ to, subject, body }) => {
+const sendEmail = async ({ to, subject, body, attachments = [] }) => {
   const response = await transporter.sendMail({
     from: process.env.SENDER_EMAIL,
     to,
     subject,
-    html: body
+    html: body,
+    attachments
   });
   return response;
 };

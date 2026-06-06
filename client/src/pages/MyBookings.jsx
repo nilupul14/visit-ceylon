@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 // import { dummyBookingData } from '../assets/assets'
 import Loading from "../components/Loading";
 import BlurCircle from "../components/BlurCircle";
-import timeFormat from "../lib/timeFormat";
 import { dateFormat } from "../lib/dateFormat";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom";
@@ -18,26 +17,20 @@ const MyBookings = () => {
   const getMyBookings = async () => {
     try {
       const { data } = await axios.get("/api/user/bookings", {
-        headers: { Authorization: `Bearer ${await getToken()}` }
+        headers: { Authorization: `Bearer ${await getToken()}` },
       });
 
       if (data?.success) {
-        // if API returns empty array, fall back to mock
         if (Array.isArray(data.bookings) && data.bookings.length > 0) {
           setBookings(data.bookings);
         } else {
-          // setBookings(dummyBookingData)
           setBookings(bookingsApi);
         }
       } else {
-        // api said "no" → use dummy
-        // setBookings(dummyBookingData)
         setBookings(bookingsApi);
       }
     } catch (error) {
       console.log("booking fetch error:", error);
-      // network / auth / backend error → still show dummy
-      // setBookings(dummyBookingData)
       setBookings(bookingsApi);
     } finally {
       setIsLoading(false);
@@ -49,8 +42,6 @@ const MyBookings = () => {
     if (user) {
       getMyBookings();
     } else {
-      // no user yet → show mock right away
-      // setBookings(dummyBookingData)
       setBookings(bookingsApi);
       setIsLoading(false);
     }
@@ -76,10 +67,6 @@ const MyBookings = () => {
         <p className="text-gray-400">You don't have any bookings yet.</p>
       ) : (
         bookings.map((item, index) => {
-          // item.show.movie.poster_path can be absolute (mock) or relative (API)
-          // const posterPath = item?.show?.movie?.poster_path
-          console.log("destinations from context in MyBookings:", destinations);
-          // const posterPath = destinations[item?.destination].poster_path
           const posterPath = getImageUrl(destinations, item?.destination);
           const posterSrc =
             posterPath && posterPath.startsWith("http")
@@ -94,7 +81,6 @@ const MyBookings = () => {
               <div className="flex flex-col md:flex-row">
                 <img
                   src={posterSrc}
-                  // alt={item?.show?.movie?.title || 'Booking'}
                   alt={item?.destinationTitle || "Booking"}
                   className="md:max-w-45 aspect-video h-auto object-cover object-bottom rounded"
                 />
@@ -109,8 +95,7 @@ const MyBookings = () => {
                   </p>
                   <p className="text-gray-400 text-sm mt-auto">
                     {item?.visitDate
-                      ? // ? dateFormat(item.show.showDateTime)
-                        dateFormat(item.visitDate)
+                      ? dateFormat(item.visitDate)
                       : "Date not set"}
                   </p>
                 </div>
@@ -120,8 +105,8 @@ const MyBookings = () => {
                 <div className="flex items-center gap-4">
                   <p className="text-2xl font-semibold mb-3">
                     {currency}
-                    {destinations?.find((p) => p._id === item?.destination)?.price *
-                      item?.amount || "0"}
+                    {destinations?.find((p) => p._id === item?.destination)
+                      ?.price * item?.amount || "0"}
                   </p>
                   {!item?.isPaid && item?.paymentLink && (
                     <Link
@@ -137,15 +122,8 @@ const MyBookings = () => {
                 <div className="text-sm">
                   <p>
                     <span className="text-gray-400">Total Tickets:</span>{" "}
-                    {/* {item?.bookedSeats ? item.bookedSeats.length : 0} */}
                     {item?.amount}
                   </p>
-                  {/* <p>
-                    <span className='text-gray-400'>Seat Number:</span>{' '}
-                    {item?.bookedSeats
-                      ? item.bookedSeats.join(', ')
-                      : 'Not assigned'}
-                  </p> */}
                 </div>
               </div>
             </div>

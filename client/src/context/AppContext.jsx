@@ -14,7 +14,6 @@ export const AppProvider = ({ children })=>{
     const [isAdmin, setIsAdmin] = useState(false)
     const [shows, setShows] = useState([])
     const [destinations, setDestinations] = useState([])
-    // const [bookings, setBookings] = useState([])
     const [bookingsApi, setBookingsApi] = useState([])
     const [adminBookings, setAdminBookings] = useState([])
     const [favoriteMovies, setFavoriteMovies] = useState([])

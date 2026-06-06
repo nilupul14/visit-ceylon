@@ -9,7 +9,6 @@ import { dummyBookingData } from "../../assets/assets";
 const ListBookings = () => {
   const currency = import.meta.env.VITE_CURRENCY;
 
-  // const { axios, getToken, user } = useAppContext();
   const {
     axios,
     user,
@@ -31,9 +30,6 @@ const ListBookings = () => {
 
   const getAllBookings = async () => {
     try {
-      // const { data } = await axios.get("/api/admin/all-bookings", {
-      //   headers: { Authorization: `Bearer ${await getToken()}` }
-      // });
       const { data } = await axios.get("/api/bookings", {
         params: { limit: 1000 },
       });
@@ -652,13 +648,7 @@ const ListBookings = () => {
                 <td className="p-2">{item.destinationTitle}</td>
                 <td className="p-2">{dateFormat(item.visitDate)}</td>
                 <td className="p-2">{item.visitTime}</td>
-                {/* <td className="p-2">
-                  {Object.keys(item.bookedSeats)
-                    .map((seat) => item.bookedSeats[seat])
-                    .join(", ")}
-                </td> */}
                 <td className="p-2">{item.amount}</td>{" "}
-                {/* this is for number of tickets */}
                 <td className="p-2">
                   {currency} {item.amount}
                 </td>

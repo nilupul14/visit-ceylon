@@ -20,7 +20,7 @@ visit-ceylon/
 |  |- controllers     # Feature logic (booking, destination, admin, stripe)
 |  |- inngest         # Workflow definitions (Clerk sync, reminders, email)
 |  |- middleware      # Clerk based admin guard
-|  |- models          # Mongoose schemas (Destination, Visit, Booking, Show, Movie, User)
+|  |- models          # Mongoose schemas (Destination, Visit, Booking, User)
 |  |- routes          # REST routers mounted in server.js
 |  `- map             # Google Maps geocode helper script
 `- README.md (this file)
@@ -28,12 +28,12 @@ visit-ceylon/
 
 ## Feature highlights
 
-- Destination discovery with hero cinematic teaser, curated lists, favorites, and deep links into visit slots and seat selection flows.
+- Destination discovery with hero cinematic teaser, curated lists, favorites, and deep links into visit availability.
 - Live Explore Map powered by `@react-google-maps/api` that plots curated coordinates and syncs with a gallery strip.
-- Booking workflow with seat layout, Stripe Checkout integration, Clerk protected user bookings, and admin seeded booking data for demos.
+- Booking workflow with visit date/time selection, Stripe Checkout integration, Clerk protected user bookings, and admin reporting.
 - Admin dashboard for operators to seed destinations, manage visits, review bookings, and monitor revenue metrics.
 - Real time auth-aware UI using Clerk on the client (`ClerkProvider`) plus `clerkMiddleware` on the API to guard admin and user routes.
-- Background workflows built with Inngest (Clerk user sync, payment timeouts, booking confirmations, recurring reminders, new show notifications).
+- Background workflows built with Inngest (Clerk user sync, payment timeouts, booking confirmations, recurring reminders, new destination notifications).
 - Email and notification plumbing through Brevo SMTP (via Nodemailer) and toast level UX feedback using `react-hot-toast`.
 
 ### Roles and access
@@ -42,7 +42,7 @@ visit-ceylon/
 - `admin`: legacy admin role with broad management rights.
 - `business_manager`: can view dashboards and bookings for oversight.
 - `financial_manager`: can view dashboards and bookings for revenue reporting.
-- `site_manager`: can manage destinations/shows (add/remove inventory).
+- `site_manager`: can manage destinations and visit inventory.
 Set these in Clerk `privateMetadata.roles` (array) or `privateMetadata.role` (string). The API treats both formats the same.
 
 ## Tech stack and third party modules
@@ -60,12 +60,12 @@ Set these in Clerk `privateMetadata.roles` (array) or `privateMetadata.role` (st
 ### Backend (server/)
 
 - Node 20+ (uses global fetch and top level await) with Express 5, CORS, and `dotenv/config`.
-- MongoDB Atlas via Mongoose 8 (schemas for User, Destination, Visit, Movie, Show, Booking).
+- MongoDB Atlas via Mongoose 8 (schemas for User, Destination, Visit, Booking).
 - Clerk Express middleware plus `@clerk/express` client for auth enforcement and metadata management.
 - Stripe SDK for Checkout sessions and webhook processing.
 - Inngest SDK for background jobs (webhook syncing, payment watchdog, reminders, broadcasts).
 - Nodemailer configured for Brevo (smtp-relay.brevo.com) transactional messages.
-- Cloudinary SDK (existing URLs in `client/src/assets`), axios (TMDB fetch, TMDB now playing, etc.), and Svix for Clerk webhook signature validation when needed.
+- Cloudinary SDK (existing URLs in `client/src/assets`), axios, and Svix for Clerk webhook signature validation when needed.
 - Custom Mongo connection logic that patches the DNS resolver to prefer Google/Cloudflare servers, useful inside restrictive hosting.
 
 ### External services
@@ -74,7 +74,6 @@ Set these in Clerk `privateMetadata.roles` (array) or `privateMetadata.role` (st
 - Stripe (Checkout, payment_intent webhooks, session metadata to reconcile bookings).
 - MongoDB Atlas (primary data store).
 - Google Maps Platform (JS SDK on the client, Geocoding API for the `server/map/mapview.js` helper).
-- The Movie Database (TMDB) API for show metadata and imagery (server controllers rely on `TMDB_API_KEY`).
 - Cloudinary CDN (static media referenced in seed data).
 - Brevo SMTP (email transport credentials).
 - Inngest cloud (event ingestion via `INNGEST_EVENT_KEY` and signing key).
@@ -89,7 +88,6 @@ Set these in Clerk `privateMetadata.roles` (array) or `privateMetadata.role` (st
 - Clerk application (publishable + secret keys, and at least one privileged user with `privateMetadata.roles` or `privateMetadata.role` set to one of: `sys_admin`, `admin`, `business_manager`, `site_manager`, `financial_manager`).
 - Stripe account with secret key, publishable key, and a webhook secret (Stripe CLI recommended for local testing).
 - Google Maps API key (Maps JS + Geocoding enabled).
-- TMDB API read token.
 - Brevo (or any SMTP) credentials for booking emails.
 - Inngest account keys (or use dev mode with mocked handlers).
 
@@ -143,7 +141,7 @@ Set `VITE_BASE_URL` to the API origin (for local dev, `http://localhost:3000`). 
 | `VITE_BASE_URL` | URL of the Express API. Used as the axios default base URL inside `AppContext`. |
 | `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key required by `ClerkProvider` in `src/main.jsx`. |
 | `VITE_CURRENCY` | Currency symbol shown in UI components (defaults to `$`). |
-| `VITE_TMDB_IMAGE_BASE_URL` | CDN base used when resolving TMDB poster paths. |
+| `VITE_TMDB_IMAGE_BASE_URL` | Optional legacy CDN base used when resolving relative poster paths. |
 | `VITE_GOOGLE_MAPS_API_KEY` | Browser key passed to `useLoadScript` in `VisitCeylonMap`. |
 | `VITE_GOOGLE_MAP_ID` | Optional custom map styling ID if you enable vector basemaps. |
 
@@ -155,7 +153,6 @@ Set `VITE_BASE_URL` to the API origin (for local dev, `http://localhost:3000`). 
 | `MONGODB_URI` | MongoDB connection string. `configs/db.js` auto-appends `/visitceylon` if you omit a database name. |
 | `MONGODB_DNS_SERVERS` | Optional comma separated DNS servers (defaults to `8.8.8.8,1.1.1.1`). |
 | `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | Required for `clerkMiddleware`, admin guard, and metadata management. |
-| `TMDB_API_KEY` | Bearer token used in `showController` when fetching movie metadata. |
 | `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Stripe Checkout creation and webhook verification. |
 | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | Authorizes the `/api/inngest` endpoint and server-to-Inngest events (`inngest.send`). |
 | `SENDER_EMAIL`, `SMTP_USER`, `SMTP_PASS` | Brevo (or SMTP) credentials used by `configs/nodeMailer.js`. |
@@ -176,9 +173,6 @@ Set `VITE_BASE_URL` to the API origin (for local dev, `http://localhost:3000`). 
 
 | Route | Description |
 | --- | --- |
-| `GET /api/show/now-playing` | Proxy to TMDB now playing feed (admin protected). |
-| `POST /api/show/add` | Seeds Movie + Show documents from TMDB data and emits `app/show.added`. |
-| `GET /api/show/all`, `GET /api/show/:movieId` | Read upcoming shows for the UI. |
 | `GET /api/destinations` | List curated destinations used across pages. |
 | `POST /api/destinations/seed` | Upsert destinations from request body or `client/src/assets/assets.js`. |
 | `POST /api/destinations/visits` | Create visit slots (`Visit` documents) for a destination. |
@@ -188,8 +182,7 @@ Set `VITE_BASE_URL` to the API origin (for local dev, `http://localhost:3000`). 
 | `GET /api/bookings/:id` | Lookup booking by Mongo `_id` or custom `bookingId`. |
 | `GET /api/user/bookings` | Clerk protected list of the authenticated user's bookings. |
 | `GET /api/user/favorites`, `POST /api/user/update-favorite` | Store favorites in Clerk metadata. |
-| `GET /api/admin/dashboard`, `/all-shows`, `/all-bookings` | Admin metrics and raw lists. |
-| `POST /api/admin/add-destination` | Seeds demo bookings/shows (see `controllers/adminController.js`). |
+| `GET /api/admin/dashboard`, `/all-bookings` | Admin metrics and raw booking lists. |
 | `POST /api/stripe` | Webhook endpoint handling `payment_intent.succeeded` events. |
 | `POST /api/inngest/*` | Inngest function runner (used by the Cloud hosted Inngest UI). |
 
@@ -198,16 +191,15 @@ Set `VITE_BASE_URL` to the API origin (for local dev, `http://localhost:3000`). 
 Defined in `server/inngest/index.js`:
 
 - `sync-user-from-clerk`, `update-user-from-clerk`, `delete-user-with-clerk` keep Mongo in sync with Clerk webhooks.
-- `release-seats-delete-booking` waits 10 minutes for unpaid bookings, then frees seats and deletes stale bookings.
-- `send-booking-confirmation-email` triggers after Stripe confirms payment (`app/show.booked`).
-- `send-show-reminders` cron runs every 8 hours to remind travelers about upcoming visits.
-- `send-new-show-notifications` broadcasts newly added shows/destinations to all users.
+- `delete-unpaid-booking` waits 10 minutes for unpaid bookings, then deletes stale bookings.
+- `send-booking-confirmation-email` triggers after Stripe confirms payment (`app/booking.confirmed`).
+- `send-destination-reminders` runs daily to remind travelers about upcoming visits.
+- `send-new-destination-notifications` broadcasts newly added destinations to all users.
 
 ## Data seeding and utilities
 
 - Destination seeds live in `client/src/assets/assets.js`. `POST /api/destinations/seed` can read from that file automatically if you do not send a body; useful for new environments.
 - Visit slot creation flow (`POST /api/destinations/visits`) expects `{ destinationId, visitsInput: [{ date, time: ["09:00", ...] }], price }`.
-- Admin endpoint `POST /api/admin/add-destination` uses an internal `bookingSeedData` array to prefill Shows and Bookings for demos. Update that array before calling the endpoint.
 - `server/map/mapview.js` demonstrates how to batch geocode destination titles with the Google Maps Geocoding API. Run it with `node map/mapview.js` after exporting `GOOGLE_MAPS_API_KEY`.
 
 ## Testing and verification

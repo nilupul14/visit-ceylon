@@ -11,7 +11,7 @@ const CinematicTeaser = () => {
     <div className="px-6 md:px-16 lg:px-24 xl:px-44 py-20 overflow-hidden">
       <p className="text-gray-300 font-medium text-lg max-w-[960px] mx-auto">
         Cinematic Teasers: Into the Island of Wonders – Experience the Magic of
-        Sri Lanka through Our Captivating Movie Trailers
+        Sri Lanka through Our Captivating Travel Films
       </p>
 
       <div className="relative mt-6">

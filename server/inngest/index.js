@@ -51,8 +51,8 @@ const syncUserUpdation = inngest.createFunction(
 )
 
 // Inngest Function to cancel booking after 10 minutes if payment is not made
-const releaseSeatsAndDeleteBooking = inngest.createFunction(
-    {id: 'release-seats-delete-booking'},
+const deleteUnpaidBooking = inngest.createFunction(
+    {id: 'delete-unpaid-booking'},
     {event: "app/checkpayment"},
     async ({ event, step })=>{
         const tenMinutesLater = new Date(Date.now() + 10 * 60 * 1000);
@@ -119,19 +119,22 @@ const sendBookingConfirmationEmail = inngest.createFunction(
             const defaultLogoUrl =
               "https://res.cloudinary.com/dirqkqwps/image/upload/v1767511889/visitCeylonLogo_fdlawx.png";
 
+            const emailContent = await buildBookingConfirmationEmail({
+              userName,
+              destinationTitle,
+              bookingId: booking.bookingId || booking._id?.toString(),
+              email: userEmail,
+              visitDate: formattedDate,
+              visitTime: formattedTime,
+              amount: amountLabel,
+              logoUrl: process.env.EMAIL_LOGO_URL || defaultLogoUrl
+            });
+
             await sendEmail({
                 to: userEmail,
                 subject: `Booking confirmed: ${destinationTitle}`,
-                body: await buildBookingConfirmationEmail({
-                  userName,
-                  destinationTitle,
-                  bookingId: booking.bookingId || booking._id?.toString(),
-                  email: userEmail,
-                  visitDate: formattedDate,
-                  visitTime: formattedTime,
-                  amount: amountLabel,
-                  logoUrl: process.env.EMAIL_LOGO_URL || defaultLogoUrl
-                })
+                body: emailContent.html,
+                attachments: emailContent.attachments
             })
 
             return { sent: true, to: userEmail };
@@ -231,7 +234,7 @@ export const functions = [
     syncUserCreation,
     syncUserDeletion,
     syncUserUpdation,
-    releaseSeatsAndDeleteBooking,
+    deleteUnpaidBooking,
     sendBookingConfirmationEmail,
     sendDestinationReminders,
     sendNewDestinationNotifications

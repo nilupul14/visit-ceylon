@@ -1,6 +1,5 @@
 import { clerkClient } from "@clerk/express";
 import Booking from "../models/Booking.js";
-import Movie from "../models/Movie.js";
 import Destination from "../models/Destination.js";
 
 
@@ -22,7 +21,7 @@ export const getUserBookings = async (req, res)=>{
     }
 }
 
-// API Controller Function to update Favorite Movie in Clerk User Metadata
+// API Controller Function to update Favorite Destination in Clerk User Metadata
 export const updateFavorite = async (req, res)=>{
     try {
         console.log("Request Body:", req.body);
@@ -48,7 +47,7 @@ export const updateFavorite = async (req, res)=>{
 
         await clerkClient.users.updateUserMetadata(userId, {privateMetadata: user.privateMetadata})
 
-        res.json({success: true, message: "Favorite movies updated" })
+        res.json({success: true, message: "Favorite destinations updated" })
     } catch (error) {
         console.error(error.message);
         res.json({ success: false, message: error.message });
@@ -69,7 +68,6 @@ export const getFavorites = async (req, res) =>{
           ? user.privateMetadata.favorites
           : [];
 
-        // Getting movies from database
         const destinations = favorites.length
           ? await Destination.find({_id: {$in: favorites}})
           : [];

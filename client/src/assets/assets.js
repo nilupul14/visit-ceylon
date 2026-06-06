@@ -1,7 +1,6 @@
 import logo from './logo.svg'
 import googlePlay from './googlePlay.svg'
 import appStore from './appStore.svg'
-import screenImage from './screenImage.svg'
 import profile from './profile.png'
 import visitCeylonLogo from './visitCeylonLogo.png'
 
@@ -9,7 +8,6 @@ export const assets = {
     logo,
     googlePlay,
     appStore,
-    screenImage,
     profile,
     visitCeylonLogo
 }
@@ -444,110 +442,47 @@ export const dummyDashboardData = {
     "totalBookings": 14,
     "totalRevenue": 1517,
     "totalUser": 5,
-    "activeShows": [
-        {
-            "_id": "68352363e96d99513e4221a4",
-            "movie": dummyShowsData[0],
-            "showDateTime": "2025-06-30T02:30:00.000Z",
-            "showPrice": 59,
-            "occupiedSeats": {
-                "A1": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "B1": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "C1": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok"
-            },
-        },
-        {
-            "_id": "6835238fe96d99513e4221a8",
-            "movie": dummyShowsData[1],
-            "showDateTime": "2025-06-30T15:30:00.000Z",
-            "showPrice": 81,
-            "occupiedSeats": {},
-        },
-        {
-            "_id": "6835238fe96d99513e4221a9",
-            "movie": dummyShowsData[2],
-            "showDateTime": "2025-06-30T03:30:00.000Z",
-            "showPrice": 81,
-            "occupiedSeats": {},
-        },
-        {
-            "_id": "6835238fe96d99513e4221aa",
-            "movie": dummyShowsData[3],
-            "showDateTime": "2025-07-15T16:30:00.000Z",
-            "showPrice": 81,
-            "occupiedSeats": {
-                "A1": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "A2": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "A3": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "A4": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok"
-            },
-        },
-        {
-            "_id": "683682072b5989c29fc6dc0d",
-            "movie": dummyShowsData[4],
-            "showDateTime": "2025-06-05T15:30:00.000Z",
-            "showPrice": 49,
-            "occupiedSeats": {
-                "A1": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "A2": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "A3": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "B1": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "B2": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok",
-                "B3": "user_2xO4XPCgWWwWq9EHuQxc5UWqIok"
-            },
-            "__v": 0
-        },
-        {
-            "_id": "68380044686d454f2116b39a",
-            "movie": dummyShowsData[5],
-            "showDateTime": "2025-06-20T16:00:00.000Z",
-            "showPrice": 79,
-            "occupiedSeats": {
-                "A1": "user_2xl7eCSUHddibk5lRxfOtw9RMwX",
-                "A2": "user_2xl7eCSUHddibk5lRxfOtw9RMwX"
-            }
-        }
-    ]
+    "activeDestinations": 6
 }
 
 export const dummyBookingData = [
     {
         "_id": "68396334fb83252d82e17295",
-        "user": { "name": "GreatStack", },
-        "show": {
-            _id: "68352363e96d99513e4221a4",
-            movie: dummyShowsData[0],
-            showDateTime: "2025-06-30T02:30:00.000Z",
-            showPrice: 59,
-        },
-        "amount": 98,
-        "bookedSeats": ["D1", "D2"],
+        "bookingId": "bk_demo_sigiriya",
+        "user": "user_demo_1",
+        "userName": "Demo Traveler",
+        "userEmail": "demo.traveler@example.com",
+        "destination": dummyShowsData[0]._id,
+        "destinationTitle": dummyShowsData[0].title,
+        "visitDate": "2025-06-30T00:00:00.000Z",
+        "visitTime": "08:00",
+        "amount": 2,
         "isPaid": false,
     },
     {
-        "_id": "68396334fb83252d82e17295",
-        "user": { "name": "GreatStack", },
-        "show": {
-            _id: "68352363e96d99513e4221a4",
-            movie: dummyShowsData[0],
-            showDateTime: "2025-06-30T02:30:00.000Z",
-            showPrice: 59,
-        },
-        "amount": 49,
-        "bookedSeats": ["A1"],
+        "_id": "68396334fb83252d82e17296",
+        "bookingId": "bk_demo_horton",
+        "user": "user_demo_2",
+        "userName": "Sample Visitor",
+        "userEmail": "sample.visitor@example.com",
+        "destination": dummyShowsData[1]._id,
+        "destinationTitle": dummyShowsData[1].title,
+        "visitDate": "2025-07-01T00:00:00.000Z",
+        "visitTime": "09:00",
+        "amount": 1,
         "isPaid": true,
     },
     {
-        "_id": "68396334fb83252d82e17295",
-        "user": { "name": "GreatStack", },
-        "show": {
-            _id: "68352363e96d99513e4221a4",
-            movie: dummyShowsData[0],
-            showDateTime: "2025-06-30T02:30:00.000Z",
-            showPrice: 59,
-        },
-        "amount": 147,
-        "bookedSeats": ["A1", "A2","A3"],
+        "_id": "68396334fb83252d82e17297",
+        "bookingId": "bk_demo_temple",
+        "user": "user_demo_3",
+        "userName": "Guest User",
+        "userEmail": "guest@example.com",
+        "destination": dummyShowsData[2]._id,
+        "destinationTitle": dummyShowsData[2].title,
+        "visitDate": "2025-07-02T00:00:00.000Z",
+        "visitTime": "17:00",
+        "amount": 3,
         "isPaid": true,
     },
 ]

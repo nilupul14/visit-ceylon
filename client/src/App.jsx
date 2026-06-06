@@ -4,7 +4,6 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Destinations from "./pages/Destinations";
 import DestinationDetails from "./pages/DestinationDetails";
-import SeatLayout from "./pages/SeatLayout";
 import MyBookings from "./pages/MyBookings";
 import Favorite from "./pages/Favorite";
 import { Toaster } from "react-hot-toast";
@@ -35,7 +34,6 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/destinations" element={<Destinations />} />
         <Route path="/destinations/:id" element={<DestinationDetails />} />
-        <Route path="/destinations/:id/:date" element={<SeatLayout />} />
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/loading/:nextUrl" element={<Loading />} />
 

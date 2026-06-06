@@ -190,15 +190,6 @@ const DestinationDetails = () => {
             {destination?.description}
           </div>
 
-          {/* <p>
-            {destination?.category
-              ? destination?.category.map((g) => g.name).join(", ")
-              : "—"}{" "}
-            •{" "}
-            {!destination?.category
-              ? destination?.release_date.split("-")[0]
-              : "Explore"}
-          </p> */}
           <p>
             {categoryList.length > 0 ? categoryList.join(", ") : "—"} •{" "}
             {destination?.release_date
@@ -278,35 +269,6 @@ const DestinationDetails = () => {
           </div>
         </div>
       </div>
-
-      {/* Casts */}
-      {/* {destination.casts && destination.casts.length > 0 && (
-        <>
-          <p className='text-lg font-medium mt-20'>Your Favorite Cast</p>
-          <div className='overflow-x-auto no-scrollbar mt-8 pb-4'>
-            <div className='flex items-center gap-4 w-max px-4'>
-              {destination.casts.slice(0, 12).map((cast, index) => {
-                const castImg = cast.profile_path?.startsWith('http')
-                  ? cast.profile_path
-                  : image_base_url + cast.profile_path
-                return (
-                  <div
-                    key={index}
-                    className='flex flex-col items-center text-center'
-                  >
-                    <img
-                      src={castImg}
-                      alt={cast.name}
-                      className='rounded-full h-20 md:h-20 aspect-square object-cover'
-                    />
-                    <p className='font-medium text-xs mt-3'>{cast.name}</p>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </>
-      )} */}
 
       <section
         className={`mt-16 transition duration-500 ${

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Loading from "../../components/Loading";
 import Title from "../../components/admin/Title";
 import { useAppContext } from "../../context/AppContext";
@@ -24,22 +24,11 @@ const ListDestinations = () => {
   const [deletingDestination, setDeletingDestination] = useState(false);
   const [selectedDestinationId, setSelectedDestinationId] = useState("all");
 
-  const getAllShows = useCallback(async () => {
-    try {
-      await axios.get("/api/admin/all-shows", {
-        headers: { Authorization: `Bearer ${await getToken()}` }
-      });
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [axios, getToken]);
-
   useEffect(() => {
     if (user) {
-      getAllShows();
+      setLoading(false);
     }
-  }, [user, getAllShows]);
+  }, [user]);
 
   useEffect(() => {
     if (isAdmin) {
